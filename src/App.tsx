@@ -1,12 +1,17 @@
 import React from 'react';
-import ControleDiario from './pages/ControleDiario';
+import { BrowserRouter } from 'react-router-dom';
+import AppRoutes from './routes';
+
+import Navbar from './components/Navbar';
 
 const App: React.FC = () => {
   return (
-    <div>
-      <ControleDiario />
-    </div>
+    <BrowserRouter>
+      <Navbar />
+      <AppRoutes />
+    </BrowserRouter>
   );
 };
+
 
 export default App;

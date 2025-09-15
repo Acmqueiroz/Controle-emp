@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import InventoryRow from '../components/InventoryRow';
 import { ContagemItem } from '../types/ContagemItem';
-import './ControleDiario.css'; // Importando o CSS
+import './ControleDiario.css';
+import { addDoc, collection } from 'firebase/firestore';
+import { db } from '../firebase';  // seu arquivo de configuração firebase
 
 const sabores: string[] = [
   '4 Queijos', 'Bacalhau', 'Banana', 'Calabresa', 'Camarão', 'Camarão com Requeijão',
@@ -13,22 +15,18 @@ const sabores: string[] = [
 
 const ControleDiario: React.FC = () => {
   const [data, setData] = useState<string>(() => new Date().toISOString().split('T')[0]);
-  const [contagem, setContagem] = useState<ContagemItem[]>(
-    sabores.map(sabor => ({
-      sabor,
-      freezer: '',
-      estufa: '',
-      perdas: '',
-    }))
-  );
-
+  const [contagem, setContagem] = useState<ContagemItem[]>(sabores.map(sabor => ({
+    sabor,
+    freezer: '',
+    estufa: '',
+    perdas: '',
+  })));
+  
   const [mostrarPedido, setMostrarPedido] = useState(false);
   const [pedidoCaixas, setPedidoCaixas] = useState<number[]>(sabores.map(() => 0));
 
   const handleChange = (index: number, field: keyof ContagemItem, value: number | '') => {
-    const novaContagem = contagem.map((item, i) =>
-      i === index ? { ...item, [field]: value } : item
-    );
+    const novaContagem = contagem.map((item, i) => i === index ? { ...item, [field]: value } : item);
     setContagem(novaContagem);
   };
 
@@ -45,6 +43,24 @@ const ControleDiario: React.FC = () => {
       (typeof contagem[index].perdas === 'number' ? contagem[index].perdas : 0);
 
     return total + pedidoCaixas[index] * 18;
+  };
+
+  // Função para salvar a contagem no Firebase
+  const handleSave = async () => {
+    try {
+      const empadasCollection = collection(db, 'contagem_diaria');
+      const docRef = await addDoc(empadasCollection, {
+        data,
+        itens: contagem,
+        pedidoCaixas
+      });
+
+      console.log('Contagem salva com ID:', docRef.id);
+      alert('Contagem salva com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar contagem:', error);
+      alert('Erro ao salvar contagem. Veja o console para detalhes.');
+    }
   };
 
   return (
@@ -98,7 +114,8 @@ const ControleDiario: React.FC = () => {
         </tbody>
       </table>
 
-      <button className="salvar-btn" onClick={() => console.log({ data, contagem, pedidoCaixas })}>
+      {/* Botão para salvar a contagem */}
+      <button className="salvar-btn" onClick={handleSave}>
         Salvar Contagem
       </button>
     </div>
