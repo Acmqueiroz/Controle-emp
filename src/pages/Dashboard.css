@@ -1,0 +1,569 @@
+.dashboard-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-header h1 {
+  color: #2c3e50;
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.dashboard-filters {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.periodo-select {
+  padding: 10px 15px;
+  border: 2px solid #bdc3c7;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.periodo-select:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: auto auto auto;
+  gap: 25px;
+  grid-template-areas: 
+    "metricas metricas"
+    "tendencias sabores"
+    "alertas grafico"
+    "performance performance";
+}
+
+/* Métricas Principais */
+.metricas-principais {
+  grid-area: metricas;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.card-metrica {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: transform 0.3s;
+  border-top: 4px solid;
+}
+
+.card-metrica:hover {
+  transform: translateY(-5px);
+}
+
+.card-metrica.vendas-hoje {
+  border-top-color: #27ae60;
+}
+
+.card-metrica.vendas-mes {
+  border-top-color: #3498db;
+}
+
+.card-metrica.vendas-ano {
+  border-top-color: #9b59b6;
+}
+
+.card-metrica.lucro-mes {
+  border-top-color: #f39c12;
+}
+
+.card-icon {
+  font-size: 3rem;
+  opacity: 0.8;
+}
+
+.card-content h3 {
+  color: #2c3e50;
+  margin: 0 0 10px 0;
+  font-size: 1.1rem;
+}
+
+.card-content .valor {
+  font-size: 2.2rem;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.card-metrica.vendas-hoje .valor {
+  color: #27ae60;
+}
+
+.card-metrica.vendas-mes .valor {
+  color: #3498db;
+}
+
+.card-metrica.vendas-ano .valor {
+  color: #9b59b6;
+}
+
+.card-metrica.lucro-mes .valor {
+  color: #f39c12;
+}
+
+.card-content small {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+
+/* Tendências */
+.tendencias-section {
+  grid-area: tendencias;
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.tendencias-section h2 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+.cards-tendencias {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.card-tendencia {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  border-left: 4px solid #3498db;
+}
+
+.card-tendencia h4 {
+  color: #2c3e50;
+  margin: 0 0 10px 0;
+  font-size: 1rem;
+}
+
+.tendencia-valor {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.tendencia-valor.positiva {
+  color: #27ae60;
+}
+
+.tendencia-valor.negativa {
+  color: #e74c3c;
+}
+
+.card-tendencia small {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+
+/* Top 5 Sabores */
+.sabores-top-section {
+  grid-area: sabores;
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.sabores-top-section h2 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+.lista-sabores-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.item-sabor-dashboard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 3px solid #3498db;
+}
+
+.posicao-dashboard {
+  background: #3498db;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.info-sabor-dashboard {
+  flex: 1;
+}
+
+.info-sabor-dashboard h4 {
+  color: #2c3e50;
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+}
+
+.info-sabor-dashboard p {
+  color: #7f8c8d;
+  margin: 2px 0;
+  font-size: 0.8rem;
+}
+
+.valor-sabor {
+  color: #27ae60 !important;
+  font-weight: bold !important;
+  font-size: 0.9rem !important;
+}
+
+.barra-progresso-dashboard {
+  width: 80px;
+  height: 12px;
+  background: #ecf0f1;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.progresso-dashboard {
+  height: 100%;
+  background: linear-gradient(90deg, #3498db, #2980b9);
+  border-radius: 6px;
+  transition: width 0.3s;
+}
+
+/* Alertas */
+.alertas-section {
+  grid-area: alertas;
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.alertas-section h2 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+.lista-alertas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.alerta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid;
+}
+
+.alerta-alta {
+  background: #fadbd8;
+  border-left-color: #e74c3c;
+}
+
+.alerta-media {
+  background: #fef9e7;
+  border-left-color: #f39c12;
+}
+
+.alerta-baixa {
+  background: #d5f4e6;
+  border-left-color: #27ae60;
+}
+
+.alerta-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.alerta-content p {
+  color: #2c3e50;
+  margin: 0 0 4px 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.alerta-content small {
+  color: #7f8c8d;
+  font-size: 0.8rem;
+}
+
+/* Gráfico */
+.grafico-section {
+  grid-area: grafico;
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.grafico-section h2 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+.grafico-barras-dashboard {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  height: 200px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+.barra-dia-dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 50px;
+  position: relative;
+}
+
+.barra-vendas-dashboard {
+  background: linear-gradient(180deg, #3498db, #2980b9);
+  width: 35px;
+  border-radius: 4px 4px 0 0;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.barra-vendas-dashboard:hover {
+  background: linear-gradient(180deg, #2980b9, #1f4e79);
+  transform: scale(1.1);
+}
+
+.label-dia-dashboard {
+  font-size: 0.8rem;
+  color: #7f8c8d;
+  margin-top: 5px;
+  font-weight: bold;
+}
+
+.valor-dia-dashboard {
+  font-size: 0.7rem;
+  color: #2c3e50;
+  margin-top: 2px;
+  text-align: center;
+  max-width: 60px;
+  word-wrap: break-word;
+}
+
+/* Performance */
+.performance-section {
+  grid-area: performance;
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.performance-section h2 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+.cards-performance {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.card-performance {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  border-left: 4px solid #3498db;
+}
+
+.card-performance h4 {
+  color: #2c3e50;
+  margin: 0 0 15px 0;
+  font-size: 1.1rem;
+}
+
+.progresso-meta {
+  width: 100%;
+  height: 20px;
+  background: #ecf0f1;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.barra-progresso-meta {
+  height: 100%;
+  background: linear-gradient(90deg, #27ae60, #2ecc71);
+  border-radius: 10px;
+  transition: width 0.3s;
+}
+
+.card-performance p {
+  color: #2c3e50;
+  margin: 0;
+  font-weight: bold;
+}
+
+.dashboard-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.5rem;
+  color: #7f8c8d;
+}
+
+/* Responsividade */
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas: 
+      "metricas"
+      "tendencias"
+      "sabores"
+      "alertas"
+      "grafico"
+      "performance";
+  }
+  
+  .metricas-principais {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 10px;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 2rem;
+  }
+  
+  .metricas-principais {
+    grid-template-columns: 1fr;
+  }
+  
+  .card-metrica {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .card-icon {
+    font-size: 2.5rem;
+  }
+  
+  .cards-tendencias {
+    flex-direction: row;
+  }
+  
+  .cards-performance {
+    grid-template-columns: 1fr;
+  }
+  
+  .grafico-barras-dashboard {
+    height: 150px;
+    gap: 4px;
+  }
+  
+  .barra-dia-dashboard {
+    min-width: 40px;
+  }
+  
+  .barra-vendas-dashboard {
+    width: 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .card-content .valor {
+    font-size: 1.8rem;
+  }
+  
+  .tendencia-valor {
+    font-size: 1.4rem;
+  }
+  
+  .cards-tendencias {
+    flex-direction: column;
+  }
+  
+  .item-sabor-dashboard {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+  
+  .barra-progresso-dashboard {
+    width: 100%;
+  }
+  
+  .alerta {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+}

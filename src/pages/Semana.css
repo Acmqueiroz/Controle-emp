@@ -1,0 +1,508 @@
+.semana-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+}
+
+.semana-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 3px solid #2c3e50;
+}
+
+.semana-header h1 {
+  color: #2c3e50;
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.semana-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-comparacao,
+.btn-exportar {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.btn-comparacao:hover,
+.btn-exportar:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-exportar {
+  background: #27ae60;
+}
+
+.btn-exportar:hover {
+  background: #229954;
+}
+
+.semana-info {
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.semana-info h2 {
+  color: #2c3e50;
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.semana-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 30px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.semana-controls button {
+  background: #34495e;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.semana-controls button:hover:not(:disabled) {
+  background: #2c3e50;
+}
+
+.semana-controls button:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.ano-atual,
+.mes-atual {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #2c3e50;
+  min-width: 100px;
+  text-align: center;
+}
+
+.resumo-semanal {
+  margin-bottom: 30px;
+}
+
+.resumo-semanal h3 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.cards-semanais {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.card-semanal {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.3s;
+  border-top: 4px solid;
+}
+
+.card-semanal:hover {
+  transform: translateY(-5px);
+}
+
+.card-semanal.vendas {
+  border-top-color: #27ae60;
+}
+
+.card-semanal.pedidos {
+  border-top-color: #e74c3c;
+}
+
+.card-semanal.lucro {
+  border-top-color: #f39c12;
+}
+
+.card-semanal h4 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+}
+
+.card-semanal .valor {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 15px 0;
+}
+
+.card-semanal.vendas .valor {
+  color: #27ae60;
+}
+
+.card-semanal.pedidos .valor {
+  color: #e74c3c;
+}
+
+.card-semanal.lucro .valor {
+  color: #f39c12;
+}
+
+.card-semanal small {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+
+.comparacao-semanal {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.comparacao-semanal h3 {
+  color: #2c3e50;
+  margin-bottom: 25px;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.cards-comparacao {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.card-comparacao {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  border-left: 4px solid #3498db;
+}
+
+.card-comparacao h4 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.valores-comparacao {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.valores-comparacao .atual {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #2c3e50;
+  text-align: center;
+}
+
+.valores-comparacao .anterior {
+  font-size: 1rem;
+  color: #7f8c8d;
+  text-align: center;
+}
+
+.valores-comparacao .variacao {
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-align: center;
+  padding: 5px 10px;
+  border-radius: 15px;
+}
+
+.variacao.positiva {
+  background: #d5f4e6;
+  color: #27ae60;
+}
+
+.variacao.negativa {
+  background: #fadbd8;
+  color: #e74c3c;
+}
+
+.sabores-top-semanal {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.sabores-top-semanal h3 {
+  color: #2c3e50;
+  margin-bottom: 25px;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.lista-sabores-semanal {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.item-sabor-semanal {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border-left: 4px solid #3498db;
+  transition: background 0.3s;
+}
+
+.item-sabor-semanal:hover {
+  background: #ecf0f1;
+}
+
+.posicao-semanal {
+  background: #3498db;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.info-sabor-semanal {
+  flex: 1;
+}
+
+.info-sabor-semanal h4 {
+  color: #2c3e50;
+  margin: 0 0 5px 0;
+  font-size: 1.1rem;
+}
+
+.info-sabor-semanal p {
+  color: #7f8c8d;
+  margin: 2px 0;
+  font-size: 0.9rem;
+}
+
+.valor-sabor {
+  color: #27ae60 !important;
+  font-weight: bold !important;
+  font-size: 1rem !important;
+}
+
+.barra-progresso-semanal {
+  width: 150px;
+  height: 15px;
+  background: #ecf0f1;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.progresso-semanal {
+  height: 100%;
+  background: linear-gradient(90deg, #3498db, #2980b9);
+  border-radius: 8px;
+  transition: width 0.3s;
+}
+
+.tabela-detalhada-semanal {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.tabela-detalhada-semanal h3 {
+  color: #2c3e50;
+  margin-bottom: 25px;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.tabela-resumo-semanal {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.tabela-resumo-semanal thead {
+  background: #34495e;
+  color: white;
+}
+
+.tabela-resumo-semanal th {
+  padding: 15px 10px;
+  text-align: left;
+  font-weight: bold;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.tabela-resumo-semanal td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #ecf0f1;
+  font-size: 1rem;
+}
+
+.tabela-resumo-semanal tbody tr:hover {
+  background: #f8f9fa;
+  transition: background 0.3s;
+}
+
+.tabela-resumo-semanal tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.tabela-resumo-semanal tbody tr:nth-child(even):hover {
+  background: #f0f0f0;
+}
+
+.variacao-positiva {
+  color: #27ae60;
+  font-weight: bold;
+}
+
+.variacao-negativa {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.tabela-resumo-semanal tfoot {
+  background: #2c3e50;
+  color: white;
+  font-weight: bold;
+}
+
+.tabela-resumo-semanal tfoot td {
+  padding: 15px 10px;
+  border-bottom: none;
+}
+
+/* Responsividade */
+@media (max-width: 1200px) {
+  .cards-semanais {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .cards-comparacao {
+    grid-template-columns: 1fr;
+  }
+  
+  .barra-progresso-semanal {
+    width: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .semana-container {
+    padding: 10px;
+  }
+  
+  .semana-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .semana-header h1 {
+    font-size: 2rem;
+  }
+  
+  .semana-actions {
+    justify-content: center;
+  }
+  
+  .semana-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .cards-semanais {
+    grid-template-columns: 1fr;
+  }
+  
+  .item-sabor-semanal {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+  
+  .barra-progresso-semanal {
+    width: 100%;
+  }
+  
+  .tabela-resumo-semanal th,
+  .tabela-resumo-semanal td {
+    padding: 8px 5px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .semana-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .btn-comparacao,
+  .btn-exportar {
+    padding: 10px 15px;
+    font-size: 0.9rem;
+  }
+  
+  .card-semanal .valor {
+    font-size: 1.6rem;
+  }
+  
+  .posicao-semanal {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+  
+  .valores-comparacao .atual {
+    font-size: 1.1rem;
+  }
+  
+  .valores-comparacao .variacao {
+    font-size: 1rem;
+  }
+}
