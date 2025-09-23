@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '../firebase';
 import { buscarDadosDoMes, calcularResumoMensal, ResumoDiario } from '../services/firebaseService';
 import { RelatorioMensal, Venda, Pedido } from '../types/Precos';
 import './Mes.css';
@@ -12,73 +14,116 @@ const Mes: React.FC = () => {
 	const [relatorioMensal, setRelatorioMensal] = useState<RelatorioMensal | null>(null);
 	const [mostrarGraficos, setMostrarGraficos] = useState(false);
 
-	// Dados de exemplo para demonstração
-	const gerarDadosExemplo = () => {
-		const vendasExemplo: Venda[] = [];
-		const pedidosExemplo: Pedido[] = [];
-		
-		// Gerar vendas para o mês
-		for (let dia = 1; dia <= 30; dia++) {
-			const quantidadeVendas = Math.floor(Math.random() * 10) + 1;
-			for (let i = 0; i < quantidadeVendas; i++) {
-				const sabores = ['FRANGO', 'CAMARÃO', 'QUEIJO', 'CARNE SECA', 'PALMITO'];
-				const sabor = sabores[Math.floor(Math.random() * sabores.length)];
-				const tipo = Math.random() > 0.7 ? 'EMPADÃO' : 'EMPADA';
-				const quantidade = Math.floor(Math.random() * 50) + 1;
-				const precoUnidade = tipo === 'EMPADÃO' ? 
-					(sabor === 'CAMARÃO' ? 7.07 : sabor === 'CARNE SECA' ? 6.97 : 5.00) :
-					(sabor === 'QUEIJO' ? 4.02 : sabor === 'CAMARÃO' ? 3.14 : 2.59);
-				
-				vendasExemplo.push({
-					id: `${dia}-${i}`,
-					data: new Date(ano, mes - 1, dia),
-					sabor,
-					tipo,
-					quantidade,
-					precoUnidade,
-					precoTotal: quantidade * precoUnidade,
-					formaPagamento: ['dinheiro', 'cartao', 'pix'][Math.floor(Math.random() * 3)] as any
-				});
-			}
-		}
-
-		// Gerar pedidos para o mês
-		for (let dia = 1; dia <= 15; dia += 2) {
-			const sabores = ['FRANGO', 'CAMARÃO', 'QUEIJO', 'CARNE SECA'];
-			const sabor = sabores[Math.floor(Math.random() * sabores.length)];
-			const tipo = Math.random() > 0.5 ? 'EMPADÃO' : 'EMPADA';
-			const quantidade = Math.floor(Math.random() * 100) + 50;
-			const precoUnidade = tipo === 'EMPADÃO' ? 
-				(sabor === 'CAMARÃO' ? 4.00 : sabor === 'CARNE SECA' ? 3.50 : 2.50) :
-				(sabor === 'QUEIJO' ? 2.00 : sabor === 'CAMARÃO' ? 2.50 : 1.50);
+	// Carregar dados reais do mês
+	const carregarDadosReais = async () => {
+		try {
+			// Buscar dados de contagem diária do mês
+			const inicioMes = new Date(ano, mes - 1, 1);
+			const fimMes = new Date(ano, mes, 0);
 			
-			pedidosExemplo.push({
-				id: `pedido-${dia}`,
-				data: new Date(ano, mes - 1, dia),
-				sabor,
-				tipo,
-				quantidade,
-				precoUnidade,
-				precoTotal: quantidade * precoUnidade,
-				fornecedor: `Fornecedor ${String.fromCharCode(65 + Math.floor(Math.random() * 3))}`,
-				status: 'entregue'
+			const contagemQuery = query(
+				collection(db, 'contagem_diaria'),
+				where('data', '>=', inicioMes.toISOString().split('T')[0]),
+				where('data', '<=', fimMes.toISOString().split('T')[0])
+			);
+			const contagemSnapshot = await getDocs(contagemQuery);
+			
+			// Buscar pedidos do mês
+			const pedidosQuery = query(
+				collection(db, 'pedidos'),
+				where('data', '>=', inicioMes),
+				where('data', '<=', fimMes)
+			);
+			const pedidosSnapshot = await getDocs(pedidosQuery);
+			
+			const vendasReais: Venda[] = [];
+			const pedidosReais: Pedido[] = [];
+			
+			// Processar dados de contagem para gerar vendas
+			contagemSnapshot.docs.forEach(doc => {
+				const data = doc.data();
+				if (data.itens && data.resumo && data.resumo.vendasDia > 0) {
+					data.itens.forEach((item: any) => {
+						if (item.sabor) {
+							// Calcular vendas por sabor baseado na proporção
+							const totalEmpadas = data.resumo.totalEmpadas || 1;
+							const proporcaoVendas = (item.freezer + item.estufa - item.perdas) / totalEmpadas;
+							const vendasSabor = Math.round(data.resumo.vendasDia * proporcaoVendas);
+							
+							if (vendasSabor > 0) {
+								// Preços de venda
+								const precosVenda: { [key: string]: { empada: number; empadao: number } } = {
+									'4 Queijos': { empada: 2.59, empadao: 0 },
+									'Bacalhau': { empada: 2.99, empadao: 0 },
+									'Banana': { empada: 2.29, empadao: 0 },
+									'Calabresa': { empada: 2.49, empadao: 0 },
+									'Camarão': { empada: 3.14, empadao: 7.07 },
+									'Camarão com Requeijão': { empada: 3.24, empadao: 0 },
+									'Carne Seca': { empada: 3.54, empadao: 6.97 },
+									'Carne Seca com Requeijão': { empada: 3.44, empadao: 0 },
+									'Chocolate': { empada: 2.85, empadao: 0 },
+									'Frango': { empada: 2.29, empadao: 4.02 },
+									'Frango com Ameixa e Bacon': { empada: 3.24, empadao: 0 },
+									'Frango com Azeitona': { empada: 2.99, empadao: 5.27 },
+									'Frango com Bacon': { empada: 2.99, empadao: 0 },
+									'Frango com Cheddar': { empada: 2.59, empadao: 0 },
+									'Frango com Palmito': { empada: 2.99, empadao: 0 },
+									'Frango com Requeijão': { empada: 2.49, empadao: 4.32 },
+									'Palmito': { empada: 3.09, empadao: 0 },
+									'Pizza': { empada: 2.39, empadao: 0 },
+									'Queijo': { empada: 2.69, empadao: 0 },
+									'Queijo com Alho': { empada: 2.85, empadao: 0 },
+									'Queijo com Cebola': { empada: 2.49, empadao: 0 },
+									'Romeu e Julieta': { empada: 2.99, empadao: 0 }
+								};
+								
+								const tipoProduto = data.resumo.tipoProduto || 'empada';
+								const precoUnidade = precosVenda[item.sabor]?.[tipoProduto] || 2.59;
+								
+								vendasReais.push({
+									id: `${doc.id}-${item.sabor}`,
+									data: data.data ? new Date(data.data) : new Date(),
+									sabor: item.sabor,
+									tipo: tipoProduto.toUpperCase() as 'EMPADA' | 'EMPADÃO',
+									quantidade: vendasSabor,
+									precoUnidade,
+									precoTotal: vendasSabor * precoUnidade,
+									formaPagamento: 'dinheiro'
+								});
+							}
+						}
+					});
+				}
 			});
+			
+			// Processar pedidos reais
+			pedidosSnapshot.docs.forEach(doc => {
+				const pedidoData = doc.data();
+				pedidosReais.push({
+					id: doc.id,
+					...pedidoData,
+					data: pedidoData.data.toDate()
+				} as Pedido);
+			});
+			
+			return { vendasReais, pedidosReais };
+		} catch (error) {
+			console.error('Erro ao carregar dados reais:', error);
+			return { vendasReais: [], pedidosReais: [] };
 		}
-
-		return { vendasExemplo, pedidosExemplo };
 	};
 
-	const calcularRelatorioMensal = () => {
-		const { vendasExemplo, pedidosExemplo } = gerarDadosExemplo();
+	const calcularRelatorioMensal = async () => {
+		const { vendasReais, pedidosReais } = await carregarDadosReais();
 		
-		const totalVendas = vendasExemplo.reduce((acc, v) => acc + v.precoTotal, 0);
-		const totalPedidos = pedidosExemplo.reduce((acc, p) => acc + p.precoTotal, 0);
+		const totalVendas = vendasReais.reduce((acc, v) => acc + v.precoTotal, 0);
+		const totalPedidos = pedidosReais.reduce((acc, p) => acc + p.precoTotal, 0);
 		const lucroBruto = totalVendas - totalPedidos;
 		const lucroLiquido = lucroBruto * 0.8; // Simulando despesas
 
 		// Sabores mais vendidos
 		const sabores: { [key: string]: { quantidade: number; valor: number } } = {};
-		vendasExemplo.forEach(venda => {
+		vendasReais.forEach(venda => {
 			if (!sabores[venda.sabor]) {
 				sabores[venda.sabor] = { quantidade: 0, valor: 0 };
 			}
@@ -94,8 +139,8 @@ const Mes: React.FC = () => {
 		// Vendas por dia
 		const vendasPorDia = Array.from({ length: 30 }, (_, i) => {
 			const dia = i + 1;
-			const vendasDia = vendasExemplo.filter(v => v.data.getDate() === dia);
-			const pedidosDia = pedidosExemplo.filter(p => p.data.getDate() === dia);
+			const vendasDia = vendasReais.filter(v => v.data.getDate() === dia);
+			const pedidosDia = pedidosReais.filter(p => p.data.getDate() === dia);
 			
 			return {
 				dia,
@@ -128,7 +173,7 @@ const Mes: React.FC = () => {
 			console.log('Usando dados de exemplo');
 			// Se não conseguir carregar do Firebase, usar dados de exemplo
 		}
-		calcularRelatorioMensal();
+		await calcularRelatorioMensal();
 	};
 
 	useEffect(() => {

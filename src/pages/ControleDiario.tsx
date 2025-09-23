@@ -94,7 +94,11 @@ const ControleDiario: React.FC = () => {
         setRecebidoHoje(docData.recebidoHoje || saboresAtuais.map(() => ''));
         setTipoProduto(docData.resumo?.tipoProduto || 'empada');
         
+        // Carregar saldo anterior do dia anterior
+        await carregarSaldoAnterior(dataSelecionada);
+        
         console.log('Dados carregados para edição:', docData);
+        console.log('modoEdicao definido como:', true);
       } else {
         // Não existe registro para esta data, carregar dados do dia anterior
         setModoEdicao(false);
@@ -110,30 +114,59 @@ const ControleDiario: React.FC = () => {
     }
   };
 
-  // Função para carregar dados do dia anterior (comportamento original)
-  const carregarDadosAnteriores = async (dataSelecionada: string) => {
-    const anterior = await buscarDocumentoAnterior(dataSelecionada);
-    if (!anterior) {
+  // Função para carregar saldo anterior do dia anterior
+  const carregarSaldoAnterior = async (dataSelecionada: string) => {
+    try {
+      // Calcular a data do dia anterior
+      const dataAnterior = new Date(dataSelecionada);
+      dataAnterior.setDate(dataAnterior.getDate() - 1);
+      const dataAnteriorStr = dataAnterior.toISOString().split('T')[0];
+      
+      // Buscar dados do dia anterior
+      const contagemQuery = query(
+        collection(db, 'contagem_diaria'),
+        where('data', '==', dataAnteriorStr)
+      );
+      const contagemSnapshot = await getDocs(contagemQuery);
+      
+      if (!contagemSnapshot.empty) {
+        const docData = contagemSnapshot.docs[0].data();
+        const saboresAtuais = getSaboresAtuais();
+        
+        // Carregar saldo anterior baseado no total do dia anterior
+        const saldoAnterior: { [key: string]: number } = {};
+        if (docData.itens) {
+          docData.itens.forEach((item: any) => {
+            if (saboresAtuais.includes(item.sabor)) {
+              const freezer = numberOrZero(item.freezer);
+              const estufa = numberOrZero(item.estufa);
+              const perdas = numberOrZero(item.perdas);
+              saldoAnterior[item.sabor] = freezer + estufa - perdas;
+            }
+          });
+        }
+        
+        setSaldoAnteriorPorSabor(saldoAnterior);
+        console.log('Saldo anterior carregado do dia', dataAnteriorStr, ':', saldoAnterior);
+      } else {
+        // Se não há dados do dia anterior, iniciar com saldo zerado
+        setSaldoAnteriorPorSabor({});
+        console.log('Nenhum dado encontrado para o dia anterior', dataAnteriorStr);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar saldo anterior:', error);
       setSaldoAnteriorPorSabor({});
-      const saboresAtuais = getSaboresAtuais();
-      setRecebidoHoje(saboresAtuais.map(() => ''));
-      return;
     }
-    const saldoMap: Record<string, number> = {};
-    anterior.itens.forEach((i) => {
-      const totalCalc = numberOrZero(i.freezer as any) + numberOrZero(i.estufa as any) - numberOrZero(i.perdas as any);
-      const saldoInf = Number((i as any).saldoInformado ?? 0) || 0;
-      saldoMap[i.sabor] = saldoInf || totalCalc;
-    });
-    setSaldoAnteriorPorSabor(saldoMap);
+  };
 
-    // Prefill Recebido com base no pedido do dia anterior (caixas * 18)
+  // Função para carregar dados do dia anterior
+  const carregarDadosAnteriores = async (dataSelecionada: string) => {
+    // Carregar saldo anterior do dia anterior
+    await carregarSaldoAnterior(dataSelecionada);
+    
+    // Inicializar campos vazios
     const saboresAtuais = getSaboresAtuais();
-    const prefillRecebido = saboresAtuais.map((_, idx) => {
-      const caixas = anterior.pedidoCaixas?.[idx] || 0;
-      return caixas * ITENS_POR_CAIXA;
-    });
-    setRecebidoHoje(prefillRecebido);
+    setRecebidoHoje(saboresAtuais.map(() => ''));
   };
 
   useEffect(() => {
@@ -184,8 +217,9 @@ const ControleDiario: React.FC = () => {
     const totalRecebido = recebidoHoje.reduce((acc, v) => acc + (typeof v === 'number' ? v : 0), 0);
     const saboresAtuais = getSaboresAtuais();
     const totalSaldoAnterior = saboresAtuais.reduce((acc, s) => acc + (saldoAnteriorPorSabor[s] || 0), 0);
-    // Vendas do dia = Saldo anterior + Recebido - Total (calculado)
-    const vendasDia = totalSaldoAnterior + totalRecebido - totalEmpadas;
+    // Vendas do dia = Saldo anterior - Total atual
+    // A diferença entre o que tinha e o que tem agora é o que foi vendido
+    const vendasDia = Math.max(0, totalSaldoAnterior - totalEmpadas);
 
     // Calcular valor total do pedido
     const valorTotalPedido = pedidoCaixas.reduce((acc, caixas, index) => {
@@ -315,6 +349,8 @@ const ControleDiario: React.FC = () => {
   return (
     <div className="container">
       <h1>Controle Diário {modoEdicao && <span style={{ color: '#f39c12', fontSize: '0.8em' }}>(Editando)</span>}</h1>
+      {/* Debug: mostrar estado do modoEdicao */}
+      {console.log('Estado atual - modoEdicao:', modoEdicao, 'documentoId:', documentoId)}
 
       <div className="controls" style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <label>
@@ -340,7 +376,7 @@ const ControleDiario: React.FC = () => {
         <button onClick={() => setMostrarPedido((v) => !v)} disabled={carregando}>
           {mostrarPedido ? 'Ocultar Pedido' : 'Mostrar Pedido'}
         </button>
-        {modoEdicao && (
+        {(modoEdicao || linhas.some(linha => linha.freezer !== '' || linha.estufa !== '' || linha.perdas !== '')) && (
           <button onClick={limparDados} style={{ background: '#e74c3c' }} disabled={carregando}>
             Limpar Dados
           </button>
@@ -390,7 +426,7 @@ const ControleDiario: React.FC = () => {
             const total = freezer + estufa - perdas;
             const saldoAnt = saldoAnteriorPorSabor[it.sabor] || 0;
             const recebido = typeof recebidoHoje[index] === 'number' ? (recebidoHoje[index] as number) : 0;
-            const vendas = saldoAnt + recebido - total;
+            const vendas = Math.max(0, saldoAnt - total);
             const saldoPrevisto = total + (pedidoCaixas[index] || 0) * ITENS_POR_CAIXA;
             const precoUnitario = PRECOS_PEDIDO[it.sabor]?.[tipoProduto] || 0;
             const valorTotalPedido = (pedidoCaixas[index] || 0) * ITENS_POR_CAIXA * precoUnitario;

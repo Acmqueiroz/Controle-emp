@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '../firebase';
 import { buscarDadosSemana, calcularTotais, buscarSaldoInicialPorSabor, buscarSaldoFinalPorSabor } from '../services/firebaseService';
 import { Contagem } from '../types/Contagem';
 import { RelatorioSemanal, Venda, Pedido } from '../types/Precos';
@@ -46,80 +48,114 @@ const Semana: React.FC = () => {
 	const semanas = gerarSemanasDoMes(ano, mes);
 	const semanaSelecionada = semanas[semanaIndex] ?? semanas[0];
 
-	// Gerar dados de exemplo para demonstração
-	const gerarDadosExemplo = (inicio: Date, fim: Date) => {
-		const vendasExemplo: Venda[] = [];
-		const pedidosExemplo: Pedido[] = [];
-		
-		// Gerar vendas para a semana
-		for (let i = 0; i < 7; i++) {
-			const data = new Date(inicio);
-			data.setDate(data.getDate() + i);
+	// Carregar dados reais da semana
+	const carregarDadosReais = async (inicio: Date, fim: Date) => {
+		try {
+			// Buscar dados de contagem diária da semana
+			const contagemQuery = query(
+				collection(db, 'contagem_diaria'),
+				where('data', '>=', inicio.toISOString().split('T')[0]),
+				where('data', '<=', fim.toISOString().split('T')[0])
+			);
+			const contagemSnapshot = await getDocs(contagemQuery);
 			
-			const quantidadeVendas = Math.floor(Math.random() * 5) + 1;
-			for (let j = 0; j < quantidadeVendas; j++) {
-				const sabores = ['FRANGO', 'CAMARÃO', 'QUEIJO', 'CARNE SECA', 'PALMITO'];
-				const sabor = sabores[Math.floor(Math.random() * sabores.length)];
-				const tipo = Math.random() > 0.7 ? 'EMPADÃO' : 'EMPADA';
-				const quantidade = Math.floor(Math.random() * 30) + 1;
-				const precoUnidade = tipo === 'EMPADÃO' ? 
-					(sabor === 'CAMARÃO' ? 7.07 : sabor === 'CARNE SECA' ? 6.97 : 5.00) :
-					(sabor === 'QUEIJO' ? 4.02 : sabor === 'CAMARÃO' ? 3.14 : 2.59);
-				
-				vendasExemplo.push({
-					id: `${i}-${j}`,
-					data,
-					sabor,
-					tipo,
-					quantidade,
-					precoUnidade,
-					precoTotal: quantidade * precoUnidade,
-					formaPagamento: ['dinheiro', 'cartao', 'pix'][Math.floor(Math.random() * 3)] as any
-				});
-			}
-		}
-
-		// Gerar pedidos para a semana
-		for (let i = 0; i < 3; i++) {
-			const data = new Date(inicio);
-			data.setDate(data.getDate() + (i * 2));
+			// Buscar pedidos da semana
+			const pedidosQuery = query(
+				collection(db, 'pedidos'),
+				where('data', '>=', inicio),
+				where('data', '<=', fim)
+			);
+			const pedidosSnapshot = await getDocs(pedidosQuery);
 			
-			const sabores = ['FRANGO', 'CAMARÃO', 'QUEIJO', 'CARNE SECA'];
-			const sabor = sabores[Math.floor(Math.random() * sabores.length)];
-			const tipo = Math.random() > 0.5 ? 'EMPADÃO' : 'EMPADA';
-			const quantidade = Math.floor(Math.random() * 50) + 25;
-			const precoUnidade = tipo === 'EMPADÃO' ? 
-				(sabor === 'CAMARÃO' ? 4.00 : sabor === 'CARNE SECA' ? 3.50 : 2.50) :
-				(sabor === 'QUEIJO' ? 2.00 : sabor === 'CAMARÃO' ? 2.50 : 1.50);
+			const vendasReais: Venda[] = [];
+			const pedidosReais: Pedido[] = [];
 			
-			pedidosExemplo.push({
-				id: `pedido-${i}`,
-				data,
-				sabor,
-				tipo,
-				quantidade,
-				precoUnidade,
-				precoTotal: quantidade * precoUnidade,
-				fornecedor: `Fornecedor ${String.fromCharCode(65 + Math.floor(Math.random() * 3))}`,
-				status: 'entregue'
+			// Processar dados de contagem para gerar vendas
+			contagemSnapshot.docs.forEach(doc => {
+				const data = doc.data();
+				if (data.itens && data.resumo && data.resumo.vendasDia > 0) {
+					data.itens.forEach((item: any) => {
+						if (item.sabor) {
+							// Calcular vendas por sabor baseado na proporção
+							const totalEmpadas = data.resumo.totalEmpadas || 1;
+							const proporcaoVendas = (item.freezer + item.estufa - item.perdas) / totalEmpadas;
+							const vendasSabor = Math.round(data.resumo.vendasDia * proporcaoVendas);
+							
+							if (vendasSabor > 0) {
+								// Preços de venda
+								const precosVenda: { [key: string]: { empada: number; empadao: number } } = {
+									'4 Queijos': { empada: 2.59, empadao: 0 },
+									'Bacalhau': { empada: 2.99, empadao: 0 },
+									'Banana': { empada: 2.29, empadao: 0 },
+									'Calabresa': { empada: 2.49, empadao: 0 },
+									'Camarão': { empada: 3.14, empadao: 7.07 },
+									'Camarão com Requeijão': { empada: 3.24, empadao: 0 },
+									'Carne Seca': { empada: 3.54, empadao: 6.97 },
+									'Carne Seca com Requeijão': { empada: 3.44, empadao: 0 },
+									'Chocolate': { empada: 2.85, empadao: 0 },
+									'Frango': { empada: 2.29, empadao: 4.02 },
+									'Frango com Ameixa e Bacon': { empada: 3.24, empadao: 0 },
+									'Frango com Azeitona': { empada: 2.99, empadao: 5.27 },
+									'Frango com Bacon': { empada: 2.99, empadao: 0 },
+									'Frango com Cheddar': { empada: 2.59, empadao: 0 },
+									'Frango com Palmito': { empada: 2.99, empadao: 0 },
+									'Frango com Requeijão': { empada: 2.49, empadao: 4.32 },
+									'Palmito': { empada: 3.09, empadao: 0 },
+									'Pizza': { empada: 2.39, empadao: 0 },
+									'Queijo': { empada: 2.69, empadao: 0 },
+									'Queijo com Alho': { empada: 2.85, empadao: 0 },
+									'Queijo com Cebola': { empada: 2.49, empadao: 0 },
+									'Romeu e Julieta': { empada: 2.99, empadao: 0 }
+								};
+								
+								const tipoProduto = data.resumo.tipoProduto || 'empada';
+								const precoUnidade = precosVenda[item.sabor]?.[tipoProduto] || 2.59;
+								
+								vendasReais.push({
+									id: `${doc.id}-${item.sabor}`,
+									data: data.data ? new Date(data.data) : new Date(),
+									sabor: item.sabor,
+									tipo: tipoProduto.toUpperCase() as 'EMPADA' | 'EMPADÃO',
+									quantidade: vendasSabor,
+									precoUnidade,
+									precoTotal: vendasSabor * precoUnidade,
+									formaPagamento: 'dinheiro'
+								});
+							}
+						}
+					});
+				}
 			});
+			
+			// Processar pedidos reais
+			pedidosSnapshot.docs.forEach(doc => {
+				const pedidoData = doc.data();
+				pedidosReais.push({
+					id: doc.id,
+					...pedidoData,
+					data: pedidoData.data.toDate()
+				} as Pedido);
+			});
+			
+			return { vendasReais, pedidosReais };
+		} catch (error) {
+			console.error('Erro ao carregar dados reais:', error);
+			return { vendasReais: [], pedidosReais: [] };
 		}
-
-		return { vendasExemplo, pedidosExemplo };
 	};
 
-	const calcularRelatorioSemanal = () => {
+	const calcularRelatorioSemanal = async () => {
 		if (!semanaSelecionada) return;
 		
-		const { vendasExemplo, pedidosExemplo } = gerarDadosExemplo(semanaSelecionada.inicio, semanaSelecionada.fim);
+		const { vendasReais, pedidosReais } = await carregarDadosReais(semanaSelecionada.inicio, semanaSelecionada.fim);
 		
-		const totalVendas = vendasExemplo.reduce((acc, v) => acc + v.precoTotal, 0);
-		const totalPedidos = pedidosExemplo.reduce((acc, p) => acc + p.precoTotal, 0);
+		const totalVendas = vendasReais.reduce((acc, v) => acc + v.precoTotal, 0);
+		const totalPedidos = pedidosReais.reduce((acc, p) => acc + p.precoTotal, 0);
 		const lucroBruto = totalVendas - totalPedidos;
 
 		// Sabores mais vendidos
 		const sabores: { [key: string]: { quantidade: number; valor: number } } = {};
-		vendasExemplo.forEach(venda => {
+		vendasReais.forEach(venda => {
 			if (!sabores[venda.sabor]) {
 				sabores[venda.sabor] = { quantidade: 0, valor: 0 };
 			}
@@ -170,7 +206,7 @@ const Semana: React.FC = () => {
 		} catch (error) {
 			console.log('Usando dados de exemplo');
 		}
-		calcularRelatorioSemanal();
+		await calcularRelatorioSemanal();
 	};
 
 	useEffect(() => {

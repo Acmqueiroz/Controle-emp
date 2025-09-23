@@ -33,32 +33,73 @@ const Custos: React.FC = () => {
 
         setPedidos(pedidosData);
 
-        // Para demonstração, manter algumas vendas de exemplo
-        // (você pode implementar um sistema de vendas separado se necessário)
-        const vendasExemplo: Venda[] = [
-          {
-            id: '1',
-            data: new Date(2024, 8, 15),
-            sabor: 'FRANGO',
-            tipo: 'EMPADA',
-            quantidade: 50,
-            precoUnidade: 2.59,
-            precoTotal: 129.50,
-            formaPagamento: 'dinheiro'
-          },
-          {
-            id: '2',
-            data: new Date(2024, 8, 16),
-            sabor: 'CAMARÃO',
-            tipo: 'EMPADÃO',
-            quantidade: 20,
-            precoUnidade: 7.07,
-            precoTotal: 141.40,
-            formaPagamento: 'pix'
+        // Carregar vendas reais baseadas nos dados de contagem diária
+        const vendasReais: Venda[] = [];
+        
+        // Buscar dados de contagem diária para calcular vendas reais
+        const contagemQuery = query(
+          collection(db, 'contagem_diaria'),
+          orderBy('data', 'desc')
+        );
+        const contagemSnapshot = await getDocs(contagemQuery);
+        
+        contagemSnapshot.docs.forEach(doc => {
+          const data = doc.data();
+          if (data.itens && data.resumo) {
+            data.itens.forEach((item: any) => {
+              if (item.sabor && data.resumo.vendasDia > 0) {
+                // Calcular vendas por sabor baseado na proporção
+                const totalEmpadas = data.resumo.totalEmpadas || 1;
+                const proporcaoVendas = (item.freezer + item.estufa - item.perdas) / totalEmpadas;
+                const vendasSabor = Math.round(data.resumo.vendasDia * proporcaoVendas);
+                
+                if (vendasSabor > 0) {
+                  // Preços de venda (diferentes dos preços de custo)
+                  const precosVenda: { [key: string]: { empada: number; empadao: number } } = {
+                    '4 Queijos': { empada: 2.59, empadao: 0 },
+                    'Bacalhau': { empada: 2.99, empadao: 0 },
+                    'Banana': { empada: 2.29, empadao: 0 },
+                    'Calabresa': { empada: 2.49, empadao: 0 },
+                    'Camarão': { empada: 3.14, empadao: 7.07 },
+                    'Camarão com Requeijão': { empada: 3.24, empadao: 0 },
+                    'Carne Seca': { empada: 3.54, empadao: 6.97 },
+                    'Carne Seca com Requeijão': { empada: 3.44, empadao: 0 },
+                    'Chocolate': { empada: 2.85, empadao: 0 },
+                    'Frango': { empada: 2.29, empadao: 4.02 },
+                    'Frango com Ameixa e Bacon': { empada: 3.24, empadao: 0 },
+                    'Frango com Azeitona': { empada: 2.99, empadao: 5.27 },
+                    'Frango com Bacon': { empada: 2.99, empadao: 0 },
+                    'Frango com Cheddar': { empada: 2.59, empadao: 0 },
+                    'Frango com Palmito': { empada: 2.99, empadao: 0 },
+                    'Frango com Requeijão': { empada: 2.49, empadao: 4.32 },
+                    'Palmito': { empada: 3.09, empadao: 0 },
+                    'Pizza': { empada: 2.39, empadao: 0 },
+                    'Queijo': { empada: 2.69, empadao: 0 },
+                    'Queijo com Alho': { empada: 2.85, empadao: 0 },
+                    'Queijo com Cebola': { empada: 2.49, empadao: 0 },
+                    'Romeu e Julieta': { empada: 2.99, empadao: 0 }
+                  };
+                  
+                  const tipoProduto = data.resumo.tipoProduto || 'empada';
+                  const precoUnidade = precosVenda[item.sabor]?.[tipoProduto] || 2.59;
+                  
+                  vendasReais.push({
+                    id: `${doc.id}-${item.sabor}`,
+                    data: data.data ? new Date(data.data) : new Date(),
+                    sabor: item.sabor,
+                    tipo: tipoProduto.toUpperCase() as 'EMPADA' | 'EMPADÃO',
+                    quantidade: vendasSabor,
+                    precoUnidade,
+                    precoTotal: vendasSabor * precoUnidade,
+                    formaPagamento: 'dinheiro' // Padrão, pode ser expandido
+                  });
+                }
+              }
+            });
           }
-        ];
+        });
 
-        setVendas(vendasExemplo);
+        setVendas(vendasReais);
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
         // Em caso de erro, usar dados de exemplo
