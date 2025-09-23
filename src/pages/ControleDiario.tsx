@@ -15,12 +15,12 @@ const sabores: string[] = [
 
 const ControleDiario: React.FC = () => {
   const [data, setData] = useState<string>(() => new Date().toISOString().split('T')[0]);
-  const [contagem, setContagem] = useState<ContagemItem[]>(sabores.map(sabor => ({
+  const [contagem, setContagem] = useState<ContagemItem[]>((sabores.map(sabor => ({
     sabor,
     freezer: '',
     estufa: '',
     perdas: '',
-  })));
+  }))));
   
   const [mostrarPedido, setMostrarPedido] = useState(false);
   const [pedidoCaixas, setPedidoCaixas] = useState<number[]>(sabores.map(() => 0));
@@ -45,7 +45,6 @@ const ControleDiario: React.FC = () => {
     return total + pedidoCaixas[index] * 18;
   };
 
-  // Função para salvar a contagem no Firebase
   const handleSave = async () => {
     try {
       const empadasCollection = collection(db, 'contagem_diaria');
@@ -61,6 +60,24 @@ const ControleDiario: React.FC = () => {
       console.error('Erro ao salvar contagem:', error);
       alert('Erro ao salvar contagem. Veja o console para detalhes.');
     }
+  };
+
+  // Função para calcular os totais por coluna
+  const calcularTotais = (field: keyof ContagemItem) => {
+    return contagem.reduce((total, item) => {
+      const value = item[field] === '' ? 0 : Number(item[field]);
+      return total + value;
+    }, 0);
+  };
+
+  // Função para calcular o total de caixas de uma coluna
+  const calcularTotalCaixas = (field: keyof ContagemItem) => {
+    const total = calcularTotais(field);
+    return Math.floor(total / 18); // Dividir pelo número de empadas por caixa
+  };
+
+  const calcularTotalPedidoCaixas = () => {
+    return pedidoCaixas.reduce((total, value) => total + value, 0);
   };
 
   return (
@@ -112,9 +129,24 @@ const ControleDiario: React.FC = () => {
             />
           ))}
         </tbody>
+        <tfoot>
+          <tr>
+            <td><strong>Total</strong></td>
+            <td>{calcularTotais('freezer')} / {calcularTotalCaixas('freezer')} caixas</td>
+            <td>{calcularTotais('estufa')} / {calcularTotalCaixas('estufa')} caixas</td>
+            <td>{calcularTotais('perdas')} / {calcularTotalCaixas('perdas')} caixas</td>
+            <td>{calcularTotais('freezer') + calcularTotais('estufa') - calcularTotais('perdas')} / 
+              {Math.floor((calcularTotais('freezer') + calcularTotais('estufa') - calcularTotais('perdas')) / 18)} caixas</td>
+            {mostrarPedido && (
+              <>
+                <td>{calcularTotalPedidoCaixas()}</td>
+                <td>{calcularTotalPedidoCaixas() * 18}</td>
+              </>
+            )}
+          </tr>
+        </tfoot>
       </table>
 
-      {/* Botão para salvar a contagem */}
       <button className="salvar-btn" onClick={handleSave}>
         Salvar Contagem
       </button>
