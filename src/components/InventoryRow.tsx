@@ -35,6 +35,9 @@ const InventoryRow: React.FC<InventoryRowProps> = ({
     (typeof data.estufa === 'number' ? data.estufa : 0) -
     (typeof data.perdas === 'number' ? data.perdas : 0);
 
+  const saldoInformado = typeof data.saldoInformado === 'number' ? data.saldoInformado : 0;
+  const diferenca = saldoInformado - total;
+
   return (
     <tr>
       <td>{data.sabor}</td>
@@ -81,6 +84,29 @@ const InventoryRow: React.FC<InventoryRowProps> = ({
 
 </td>
 
+      <td>
+        <input
+          type="number"
+          min={0}
+          value={data.saldoInformado ?? ''}
+          onChange={handleInputChange('saldoInformado')}
+          style={{ width: '60px' }}
+        />
+      </td>
+      <td>
+        <input
+          type="number"
+          value={diferenca}
+          readOnly
+          style={{
+            width: '60px',
+            backgroundColor: '#333',
+            color: '#fff',
+            border: '1px solid #555',
+            textAlign: 'center'
+          }}
+        />
+      </td>
 
       {mostrarPedido && (
         <>

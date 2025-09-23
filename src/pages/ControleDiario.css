@@ -51,18 +51,35 @@ h1 {
   text-align: center;
 }
 
-.tabela-controle input[type="number"] {
+/* Inputs editáveis com fundo mais escuro/destaque */
+.input-editavel {
   width: 60px;
   padding: 4px;
-  background: #2e2e2e;
+  background: #2b3440;
+  color: white;
+  border: 1px solid #5a6b7d;
+  text-align: center;
+}
+
+/* Inputs somente leitura com fundo cinza */
+.input-ro {
+  width: 60px;
+  padding: 4px;
+  background: #333;
   color: white;
   border: 1px solid #555;
   text-align: center;
 }
 
-.tabela-controle input[readonly] {
-  background-color: #333;
-  border: none;
+/* Remover setas dos inputs de número */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spinner[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
 }
 
 .salvar-btn {

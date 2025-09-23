@@ -3,4 +3,5 @@ export interface ContagemItem {
   freezer: number | '';
   estufa: number | '';
   perdas: number | '';
+  saldoInformado?: number | '';
 }
