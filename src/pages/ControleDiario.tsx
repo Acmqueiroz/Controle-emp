@@ -218,10 +218,11 @@ const ControleDiario: React.FC = () => {
     const totalEmpadas = totalFreezer + totalEstufa - totalPerdas;
     const totalEmpadasCaixas = Math.floor(totalEmpadas / ITENS_POR_CAIXA);
     
-    const totalRecebido = recebidoHojeTipo.reduce((acc, v) => {
+    let totalRecebido = 0;
+    recebidoHojeTipo.forEach(v => {
       const valor = typeof v === 'number' ? v : (Number(v) || 0);
-      return acc + valor;
-    }, 0) as number;
+      totalRecebido += valor;
+    });
     const totalSaldoAnterior = sabores.reduce((acc, s) => acc + (saldoAnteriorPorSabor[s] || 0), 0);
     const vendasDia = Math.max(0, totalSaldoAnterior - totalEmpadas);
     

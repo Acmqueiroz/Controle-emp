@@ -91,10 +91,11 @@ const ControleDiario = () => {
         const totalPerdas = linhasTipo.reduce((acc, it) => acc + numberOrZero(it.perdas), 0);
         const totalEmpadas = totalFreezer + totalEstufa - totalPerdas;
         const totalEmpadasCaixas = Math.floor(totalEmpadas / ITENS_POR_CAIXA);
-        const totalRecebido = recebidoHojeTipo.reduce((acc, v) => {
+        let totalRecebido = 0;
+        recebidoHojeTipo.forEach(v => {
             const valor = typeof v === 'number' ? v : (Number(v) || 0);
-            return Number(acc) + Number(valor);
-        }, 0);
+            totalRecebido += valor;
+        });
         const totalSaldoAnterior = sabores.reduce((acc, s) => acc + (saldoAnteriorPorSabor[s] || 0), 0);
         const vendasDia = Math.max(0, totalSaldoAnterior - totalEmpadas);
         const valorTotalPedido = pedidoCaixasTipo.reduce((acc, caixas, index) => {
