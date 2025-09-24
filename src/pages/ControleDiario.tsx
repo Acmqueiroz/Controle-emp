@@ -191,7 +191,19 @@ const ControleDiario: React.FC = () => {
   const [carregando, setCarregando] = useState<boolean>(false);
 
   // Função para calcular totais por tipo de produto
-  const calcularTotaisPorTipo = (tipo: 'empada' | 'empadao') => {
+  const calcularTotaisPorTipo = (tipo: 'empada' | 'empadao'): {
+    totalFreezer: number;
+    totalEstufa: number;
+    totalPerdas: number;
+    totalEmpadas: number;
+    totalEmpadasCaixas: number;
+    totalRecebido: number;
+    totalSaldoAnterior: number;
+    vendasDia: number;
+    valorTotalPedido: number;
+    totalPedido: number;
+    totalPedidoUnidades: number;
+  } => {
     const sabores = tipo === 'empada' ? SABORES_EMPADA : SABORES_EMPADAO;
     const inicioIndex = tipo === 'empada' ? 0 : SABORES_EMPADA.length;
     const fimIndex = tipo === 'empada' ? SABORES_EMPADA.length : SABORES_EMPADA.length + SABORES_EMPADAO.length;
@@ -206,7 +218,10 @@ const ControleDiario: React.FC = () => {
     const totalEmpadas = totalFreezer + totalEstufa - totalPerdas;
     const totalEmpadasCaixas = Math.floor(totalEmpadas / ITENS_POR_CAIXA);
     
-    const totalRecebido = recebidoHojeTipo.reduce((acc, v) => acc + (typeof v === 'number' ? v : Number(v) || 0), 0);
+    const totalRecebido = recebidoHojeTipo.reduce((acc, v) => {
+      const valor = typeof v === 'number' ? v : (Number(v) || 0);
+      return acc + valor;
+    }, 0) as number;
     const totalSaldoAnterior = sabores.reduce((acc, s) => acc + (saldoAnteriorPorSabor[s] || 0), 0);
     const vendasDia = Math.max(0, totalSaldoAnterior - totalEmpadas);
     

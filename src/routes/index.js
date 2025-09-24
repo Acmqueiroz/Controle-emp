@@ -1,0 +1,13 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { Routes, Route } from 'react-router-dom';
+import Home from '../pages/Home';
+import ContagemDiaria from '../pages/ControleDiario';
+import Semana from '../pages/Semana';
+import Mes from '../pages/Mes';
+import Pagamentos from '../pages/Pagamento';
+import Custos from '../pages/Custos';
+import Dashboard from '../pages/Dashboard';
+import SistemaSugestoes from '../components/SistemaSugestoes';
+import NotFound from '../pages/NotFound';
+const AppRoutes = () => (_jsxs(Routes, { children: [_jsx(Route, { path: "/", element: _jsx(Home, {}) }), _jsx(Route, { path: "/dashboard", element: _jsx(Dashboard, {}) }), _jsx(Route, { path: "/contagem", element: _jsx(ContagemDiaria, {}) }), _jsx(Route, { path: "/semana", element: _jsx(Semana, {}) }), _jsx(Route, { path: "/mes", element: _jsx(Mes, {}) }), _jsx(Route, { path: "/pagamentos", element: _jsx(Pagamentos, {}) }), _jsx(Route, { path: "/custos", element: _jsx(Custos, {}) }), _jsx(Route, { path: "/sugestoes", element: _jsx(SistemaSugestoes, {}) }), _jsx(Route, { path: "*", element: _jsx(NotFound, {}) })] }));
+export default AppRoutes;
