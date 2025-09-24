@@ -2,7 +2,9 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { useEffect, useState } from 'react';
 import { addDoc, collection, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+//import { PrecoProduto } from '../types/Precos';
 import './ControleDiario.css';
+//import { buscarDocumentoAnterior } from '../services/firebaseService';
 // Sabores específicos para cada tipo de produto
 const SABORES_EMPADA = [
     '4 Queijos', 'Bacalhau', 'Banana', 'Calabresa', 'Camarão', 'Camarão com Requeijão',
@@ -207,9 +209,9 @@ const ControleDiario = () => {
                 if (docData.itens && docData.pedidoCaixas) {
                     docData.itens.forEach((item, index) => {
                         if (saboresAtuais.includes(item.sabor)) {
-                            const freezer = numberOrZero(item.freezer);
-                            const estufa = numberOrZero(item.estufa);
-                            const perdas = numberOrZero(item.perdas);
+                            const freezer = numberOrZero(typeof item.freezer === 'string' ? (item.freezer === '' ? '' : Number(item.freezer)) : item.freezer);
+                            const estufa = numberOrZero(typeof item.estufa === 'string' ? (item.estufa === '' ? '' : Number(item.estufa)) : item.estufa);
+                            const perdas = numberOrZero(typeof item.perdas === 'string' ? (item.perdas === '' ? '' : Number(item.perdas)) : item.perdas);
                             const total = freezer + estufa - perdas;
                             const pedidoCaixas = docData.pedidoCaixas[index] || 0;
                             const saldoPrevisto = total + (pedidoCaixas * ITENS_POR_CAIXA);

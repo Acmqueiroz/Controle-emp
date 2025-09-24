@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { addDoc, collection, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { ContagemItem } from '../types/ContagemItem';
-import { PrecoProduto } from '../types/Precos';
+//import { PrecoProduto } from '../types/Precos';
 import './ControleDiario.css';
-import { buscarDocumentoAnterior } from '../services/firebaseService';
+//import { buscarDocumentoAnterior } from '../services/firebaseService';
 
 // Sabores específicos para cada tipo de produto
 const SABORES_EMPADA: string[] = [
@@ -64,7 +64,19 @@ const TabelaControle: React.FC<{
   alterarLinha: (index: number, campo: keyof ContagemItem, valor: number | '') => void;
   alterarPedido: (index: number, valor: number | string) => void;
   alterarRecebido: (index: number, valor: number | string) => void;
-  totais: any;
+  totais: {
+    totalFreezer: number;
+    totalEstufa: number;
+    totalPerdas: number;
+    totalEmpadas: number;
+    totalEmpadasCaixas: number;
+    totalRecebido: number;
+    totalSaldoAnterior: number;
+    vendasDia: number;
+    valorTotalPedido: number;
+    totalPedido: number;
+    totalPedidoUnidades: number;
+  };
 }> = ({ tipoProduto, sabores, linhas, pedidoCaixas, recebidoHoje, saldoAnteriorPorSabor, mostrarPedido, alterarLinha, alterarPedido, alterarRecebido, totais }) => {
   return (
     <table className="tabela-controle">
@@ -352,11 +364,11 @@ const ControleDiario: React.FC = () => {
         // Carregar saldo anterior baseado no saldo previsto do dia anterior (total + pedidos)
         const saldoAnterior: { [key: string]: number } = {};
         if (docData.itens && docData.pedidoCaixas) {
-          docData.itens.forEach((item: any, index: number) => {
+          docData.itens.forEach((item: { sabor: string; freezer: number | string | ''; estufa: number | string | ''; perdas: number | string | '' }, index: number) => {
             if (saboresAtuais.includes(item.sabor)) {
-              const freezer = numberOrZero(item.freezer);
-              const estufa = numberOrZero(item.estufa);
-              const perdas = numberOrZero(item.perdas);
+              const freezer = numberOrZero(typeof item.freezer === 'string' ? (item.freezer === '' ? '' : Number(item.freezer)) : item.freezer);
+              const estufa = numberOrZero(typeof item.estufa === 'string' ? (item.estufa === '' ? '' : Number(item.estufa)) : item.estufa);
+              const perdas = numberOrZero(typeof item.perdas === 'string' ? (item.perdas === '' ? '' : Number(item.perdas)) : item.perdas);
               const total = freezer + estufa - perdas;
               const pedidoCaixas = docData.pedidoCaixas[index] || 0;
               const saldoPrevisto = total + (pedidoCaixas * ITENS_POR_CAIXA);

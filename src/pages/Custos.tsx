@@ -46,7 +46,7 @@ const Custos: React.FC = () => {
         contagemSnapshot.docs.forEach(doc => {
           const data = doc.data();
           if (data.itens && data.resumo) {
-            data.itens.forEach((item: any) => {
+            data.itens.forEach((item: { sabor: string; freezer: number; estufa: number; perdas: number }) => {
               if (item.sabor && data.resumo.vendasDia > 0) {
                 // Calcular vendas por sabor baseado na proporção
                 const totalEmpadas = data.resumo.totalEmpadas || 1;
