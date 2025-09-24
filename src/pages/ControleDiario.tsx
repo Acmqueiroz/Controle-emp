@@ -24,32 +24,163 @@ const ITENS_POR_CAIXA = 18;
 
 // Preços baseados na tabela de preços (valores de custo para pedidos)
 const PRECOS_PEDIDO: { [key: string]: { empada: number; empadao: number } } = {
-  '4 Queijos': { empada: 1.80, empadao: 0 },
-  'Bacalhau': { empada: 2.20, empadao: 0 },
-  'Banana': { empada: 1.50, empadao: 0 },
-  'Calabresa': { empada: 1.70, empadao: 0 },
-  'Camarão': { empada: 2.50, empadao: 4.50 },
-  'Camarão com Requeijão': { empada: 2.60, empadao: 0 },
-  'Carne Seca': { empada: 2.80, empadao: 5.00 },
-  'Carne Seca com Requeijão': { empada: 2.70, empadao: 0 },
-  'Chocolate': { empada: 1.90, empadao: 0 },
-  'Frango': { empada: 1.50, empadao: 2.70 },
-  'Frango com Ameixa e Bacon': { empada: 2.40, empadao: 0 },
-  'Frango com Azeitona': { empada: 2.20, empadao: 3.90 },
-  'Frango com Bacon': { empada: 2.20, empadao: 0 },
-  'Frango com Cheddar': { empada: 1.80, empadao: 0 },
-  'Frango com Palmito': { empada: 2.20, empadao: 0 },
-  'Frango com Requeijão': { empada: 1.70, empadao: 3.00 },
-  'Palmito': { empada: 2.30, empadao: 0 },
-  'Pizza': { empada: 1.60, empadao: 0 },
-  'Queijo': { empada: 2.00, empadao: 0 },
-  'Queijo com Alho': { empada: 1.90, empadao: 0 },
-  'Queijo com Cebola': { empada: 1.70, empadao: 0 },
-  'Romeu e Julieta': { empada: 2.10, empadao: 0 }
+  '4 Queijos': { empada: 2.75, empadao: 0 },
+  'Bacalhau': { empada: 2.75, empadao: 0 },
+  'Banana': { empada: 2.40, empadao: 0 },
+  'Calabresa': { empada: 2.58, empadao: 0 },
+  'Camarão': { empada: 3.14, empadao: 7.07 },
+  'Camarão com Requeijão': { empada: 3.18, empadao: 0 },
+  'Carne Seca': { empada: 3.54, empadao: 6.97 },
+  'Carne Seca com Requeijão': { empada: 3.39, empadao: 0 },
+  'Chocolate': { empada: 2.85, empadao: 0 },
+  'Frango': { empada: 2.59, empadao: 5.00 },
+  'Frango com Ameixa e Bacon': { empada: 3.07, empadao: 0 },
+  'Frango com Azeitona': { empada: 2.95, empadao: 5.63 },
+  'Frango com Bacon': { empada: 2.99, empadao: 0 },
+  'Frango com Cheddar': { empada: 2.75, empadao: 0 },
+  'Frango com Palmito': { empada: 2.99, empadao: 0 },
+  'Frango com Requeijão': { empada: 2.69, empadao: 5.10 },
+  'Palmito': { empada: 3.00, empadao: 0 },
+  'Pizza': { empada: 2.55, empadao: 0 },
+  'Queijo': { empada: 4.02, empadao: 0 },
+  'Queijo com Alho': { empada: 3.77, empadao: 0 },
+  'Queijo com Cebola': { empada: 2.69, empadao: 0 },
+  'Romeu e Julieta': { empada: 3.31, empadao: 0 }
 };
 
 const numberOrZero = (value: number | '' | undefined): number => {
   return typeof value === 'number' ? value : Number(value) || 0;
+};
+
+// Componente para tabela de controle
+const TabelaControle: React.FC<{
+  tipoProduto: 'empada' | 'empadao';
+  sabores: string[];
+  linhas: ContagemItem[];
+  pedidoCaixas: number[];
+  recebidoHoje: (number | '')[];
+  saldoAnteriorPorSabor: Record<string, number>;
+  mostrarPedido: boolean;
+  alterarLinha: (index: number, campo: keyof ContagemItem, valor: number | '') => void;
+  alterarPedido: (index: number, valor: number | string) => void;
+  alterarRecebido: (index: number, valor: number | string) => void;
+  totais: any;
+}> = ({ tipoProduto, sabores, linhas, pedidoCaixas, recebidoHoje, saldoAnteriorPorSabor, mostrarPedido, alterarLinha, alterarPedido, alterarRecebido, totais }) => {
+  return (
+    <table className="tabela-controle">
+      <thead>
+        <tr>
+          <th>Sabor</th>
+          <th>Saldo anterior</th>
+          <th>Recebido</th>
+          <th>Freezer</th>
+          <th>Estufa</th>
+          <th>Perdas</th>
+          <th>Total</th>
+          <th>Vendas</th>
+          {mostrarPedido && <th>Pedido (caixas)</th>}
+          {mostrarPedido && <th>Preço Unit.</th>}
+          {mostrarPedido && <th>Valor Total</th>}
+          {mostrarPedido && <th>Saldo Previsto</th>}
+        </tr>
+      </thead>
+      <tbody>
+        {linhas.map((it, index) => {
+          const freezer = numberOrZero(it.freezer);
+          const estufa = numberOrZero(it.estufa);
+          const perdas = numberOrZero(it.perdas);
+          const total = freezer + estufa - perdas;
+          const saldoAnt = saldoAnteriorPorSabor[it.sabor] || 0;
+          const recebido = typeof recebidoHoje[index] === 'number' ? (recebidoHoje[index] as number) : 0;
+          const vendas = Math.max(0, saldoAnt - total);
+          const saldoPrevisto = total + (pedidoCaixas[index] || 0) * ITENS_POR_CAIXA;
+          const precoUnitario = PRECOS_PEDIDO[it.sabor]?.[tipoProduto] || 0;
+          const valorTotalPedido = (pedidoCaixas[index] || 0) * ITENS_POR_CAIXA * precoUnitario;
+          
+          return (
+            <tr key={index}>
+              <td>{it.sabor}</td>
+              <td><input className="input-ro" readOnly value={saldoAnt} /></td>
+              <td>
+                <input
+                  className="input-editavel no-spinner"
+                  type="number"
+                  inputMode="numeric"
+                  placeholder=""
+                  value={recebidoHoje[index]}
+                  onChange={(e) => alterarRecebido(index, e.target.value)}
+                  min={0}
+                  style={{ width: 70 }}
+                />
+              </td>
+              <td>
+                <input className="input-editavel no-spinner" type="number" inputMode="numeric" placeholder="" min={0} value={it.freezer} onChange={(e) => {
+                  const n = e.currentTarget.valueAsNumber;
+                  alterarLinha(index, 'freezer', Number.isNaN(n) ? '' : n);
+                }} style={{ width: 70 }} />
+              </td>
+              <td>
+                <input className="input-editavel no-spinner" type="number" inputMode="numeric" placeholder="" min={0} value={it.estufa} onChange={(e) => {
+                  const n = e.currentTarget.valueAsNumber;
+                  alterarLinha(index, 'estufa', Number.isNaN(n) ? '' : n);
+                }} style={{ width: 70 }} />
+              </td>
+              <td>
+                <input className="input-editavel no-spinner" type="number" inputMode="numeric" placeholder="" min={0} value={it.perdas} onChange={(e) => {
+                  const n = e.currentTarget.valueAsNumber;
+                  alterarLinha(index, 'perdas', Number.isNaN(n) ? '' : n);
+                }} style={{ width: 70 }} />
+              </td>
+              <td><input className="input-ro" readOnly value={total} /></td>
+              <td><input className="input-ro" readOnly value={vendas} /></td>
+              {mostrarPedido && (
+                <>
+                  <td>
+                    <input className="input-editavel no-spinner" type="number" inputMode="numeric" placeholder="" min={0} value={pedidoCaixas[index]} onChange={(e) => {
+                      const n = e.currentTarget.valueAsNumber;
+                      alterarPedido(index, Number.isNaN(n) ? '' : n);
+                    }} style={{ width: 70 }} />
+                  </td>
+                  <td>
+                    <input className="input-ro" readOnly value={`R$ ${precoUnitario.toFixed(2)}`} />
+                  </td>
+                  <td>
+                    <input className="input-ro" readOnly value={`R$ ${valorTotalPedido.toFixed(2)}`} />
+                  </td>
+                  <td>
+                    <input className="input-ro" readOnly value={saldoPrevisto} />
+                  </td>
+                </>
+              )}
+            </tr>
+          );
+        })}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td><strong>Total</strong></td>
+          <td>{totais.totalSaldoAnterior}</td>
+          <td>{totais.totalRecebido}</td>
+          <td>{totais.totalFreezer}</td>
+          <td>{totais.totalEstufa}</td>
+          <td>{totais.totalPerdas}</td>
+          <td>{totais.totalEmpadas}</td>
+          <td>{totais.vendasDia}</td>
+          {mostrarPedido && <td>{totais.totalPedido}</td>}
+          {mostrarPedido && <td>-</td>}
+          {mostrarPedido && <td>R$ {totais.valorTotalPedido.toFixed(2)}</td>}
+          {mostrarPedido && <td>{totais.totalPedidoUnidades}</td>}
+        </tr>
+        <tr style={{ backgroundColor: '#f0f0f0', fontWeight: 'bold' }}>
+          <td><strong>Resumo</strong></td>
+          <td colSpan={5}></td>
+          <td><strong>Caixas: {totais.totalEmpadasCaixas}</strong></td>
+          <td><strong>Valor Vendas: R$ {(totais.vendasDia * 7.00).toFixed(2)}</strong></td>
+          {mostrarPedido && <td colSpan={4}></td>}
+        </tr>
+      </tfoot>
+    </table>
+  );
 };
 
 const ControleDiario: React.FC = () => {
@@ -59,16 +190,77 @@ const ControleDiario: React.FC = () => {
   const [documentoId, setDocumentoId] = useState<string | null>(null);
   const [carregando, setCarregando] = useState<boolean>(false);
 
-  // Função para obter sabores baseado no tipo de produto
-  const getSaboresAtuais = () => {
-    return tipoProduto === 'empada' ? SABORES_EMPADA : SABORES_EMPADAO;
+  // Função para calcular totais por tipo de produto
+  const calcularTotaisPorTipo = (tipo: 'empada' | 'empadao') => {
+    const sabores = tipo === 'empada' ? SABORES_EMPADA : SABORES_EMPADAO;
+    const inicioIndex = tipo === 'empada' ? 0 : SABORES_EMPADA.length;
+    const fimIndex = tipo === 'empada' ? SABORES_EMPADA.length : SABORES_EMPADA.length + SABORES_EMPADAO.length;
+    
+    const linhasTipo = linhas.slice(inicioIndex, fimIndex);
+    const pedidoCaixasTipo = pedidoCaixas.slice(inicioIndex, fimIndex);
+    const recebidoHojeTipo = recebidoHoje.slice(inicioIndex, fimIndex);
+    
+    const totalFreezer = linhasTipo.reduce((acc, it) => acc + numberOrZero(it.freezer), 0);
+    const totalEstufa = linhasTipo.reduce((acc, it) => acc + numberOrZero(it.estufa), 0);
+    const totalPerdas = linhasTipo.reduce((acc, it) => acc + numberOrZero(it.perdas), 0);
+    const totalEmpadas = totalFreezer + totalEstufa - totalPerdas;
+    const totalEmpadasCaixas = Math.floor(totalEmpadas / ITENS_POR_CAIXA);
+    
+    const totalRecebido = recebidoHojeTipo.reduce((acc, v) => acc + (typeof v === 'number' ? v : 0), 0);
+    const totalSaldoAnterior = sabores.reduce((acc, s) => acc + (saldoAnteriorPorSabor[s] || 0), 0);
+    const vendasDia = Math.max(0, totalSaldoAnterior - totalEmpadas);
+    
+    const valorTotalPedido = pedidoCaixasTipo.reduce((acc, caixas, index) => {
+      if (caixas > 0) {
+        const sabor = sabores[index];
+        const preco = PRECOS_PEDIDO[sabor]?.[tipo] || 0;
+        return acc + (caixas * ITENS_POR_CAIXA * preco);
+      }
+      return acc;
+    }, 0);
+    
+    const totalPedido = pedidoCaixasTipo.reduce((acc, v) => acc + v, 0);
+    const totalPedidoUnidades = totalPedido * ITENS_POR_CAIXA;
+    
+    return {
+      totalFreezer,
+      totalEstufa,
+      totalPerdas,
+      totalEmpadas,
+      totalEmpadasCaixas,
+      totalRecebido,
+      totalSaldoAnterior,
+      vendasDia,
+      valorTotalPedido,
+      totalPedido,
+      totalPedidoUnidades
+    };
   };
 
-  // Iniciar campos vazios para digitação
+  // Calcular totais combinados (Empada + Empadão)
+  const calcularTotaisCombinados = () => {
+    const totaisEmpada = calcularTotaisPorTipo('empada');
+    const totaisEmpadao = calcularTotaisPorTipo('empadao');
+    
+    return {
+      totalSaldoAnterior: totaisEmpada.totalSaldoAnterior + totaisEmpadao.totalSaldoAnterior,
+      totalRecebido: totaisEmpada.totalRecebido + totaisEmpadao.totalRecebido,
+      vendasDia: totaisEmpada.vendasDia + totaisEmpadao.vendasDia,
+      totalFreezer: totaisEmpada.totalFreezer + totaisEmpadao.totalFreezer,
+      totalEstufa: totaisEmpada.totalEstufa + totaisEmpadao.totalEstufa,
+      totalPerdas: totaisEmpada.totalPerdas + totaisEmpadao.totalPerdas,
+      totalEmpadas: totaisEmpada.totalEmpadas + totaisEmpadao.totalEmpadas,
+      totalEmpadasCaixas: totaisEmpada.totalEmpadasCaixas + totaisEmpadao.totalEmpadasCaixas,
+      totalPedido: totaisEmpada.totalPedido + totaisEmpadao.totalPedido,
+      valorTotalPedido: totaisEmpada.valorTotalPedido + totaisEmpadao.valorTotalPedido,
+      totalPedidoUnidades: totaisEmpada.totalPedidoUnidades + totaisEmpadao.totalPedidoUnidades
+    };
+  };
+
+  // Iniciar campos vazios para digitação (incluindo ambos os tipos)
   const [linhas, setLinhas] = useState<ContagemItem[]>([]);
   const [pedidoCaixas, setPedidoCaixas] = useState<number[]>([]);
   const [recebidoHoje, setRecebidoHoje] = useState<(number | '')[]>([]);
-  const [tipoProduto, setTipoProduto] = useState<'empada' | 'empadao'>('empada');
 
   const [saldoAnteriorPorSabor, setSaldoAnteriorPorSabor] = useState<Record<string, number>>({});
 
@@ -88,14 +280,18 @@ const ControleDiario: React.FC = () => {
         setModoEdicao(true);
         
         // Carregar dados existentes
-        const saboresAtuais = getSaboresAtuais();
-        setLinhas(docData.itens || saboresAtuais.map((sabor) => ({ sabor, freezer: '', estufa: '', perdas: '' })));
-        setPedidoCaixas(docData.pedidoCaixas || saboresAtuais.map(() => 0));
-        setRecebidoHoje(docData.recebidoHoje || saboresAtuais.map(() => ''));
-        setTipoProduto(docData.resumo?.tipoProduto || 'empada');
+        const todosSabores = [...SABORES_EMPADA, ...SABORES_EMPADAO];
+        setLinhas(docData.itens || todosSabores.map((sabor) => ({ sabor, freezer: '', estufa: '', perdas: '' })));
+        setPedidoCaixas(docData.pedidoCaixas || todosSabores.map(() => 0));
+        setRecebidoHoje(docData.recebidoHoje || todosSabores.map(() => ''));
         
-        // Carregar saldo anterior do dia anterior
-        await carregarSaldoAnterior(dataSelecionada);
+        // Carregar saldo anterior salvo no documento ou do dia anterior
+        if (docData.saldoAnteriorPorSabor) {
+          setSaldoAnteriorPorSabor(docData.saldoAnteriorPorSabor);
+          console.log('Saldo anterior carregado do documento:', docData.saldoAnteriorPorSabor);
+        } else {
+          await carregarSaldoAnterior(dataSelecionada);
+        }
         
         console.log('Dados carregados para edição:', docData);
         console.log('modoEdicao definido como:', true);
@@ -122,6 +318,8 @@ const ControleDiario: React.FC = () => {
       dataAnterior.setDate(dataAnterior.getDate() - 1);
       const dataAnteriorStr = dataAnterior.toISOString().split('T')[0];
       
+      console.log('Buscando saldo anterior para o dia:', dataAnteriorStr);
+      
       // Buscar dados do dia anterior
       const contagemQuery = query(
         collection(db, 'contagem_diaria'),
@@ -133,6 +331,8 @@ const ControleDiario: React.FC = () => {
         const docData = contagemSnapshot.docs[0].data();
         const saboresAtuais = getSaboresAtuais();
         
+        console.log('Dados encontrados do dia anterior:', docData);
+        
         // Carregar saldo anterior baseado no total do dia anterior
         const saldoAnterior: { [key: string]: number } = {};
         if (docData.itens) {
@@ -141,7 +341,9 @@ const ControleDiario: React.FC = () => {
               const freezer = numberOrZero(item.freezer);
               const estufa = numberOrZero(item.estufa);
               const perdas = numberOrZero(item.perdas);
-              saldoAnterior[item.sabor] = freezer + estufa - perdas;
+              const total = freezer + estufa - perdas;
+              saldoAnterior[item.sabor] = total;
+              console.log(`Sabor ${item.sabor}: freezer=${freezer}, estufa=${estufa}, perdas=${perdas}, total=${total}`);
             }
           });
         }
@@ -164,26 +366,26 @@ const ControleDiario: React.FC = () => {
     // Carregar saldo anterior do dia anterior
     await carregarSaldoAnterior(dataSelecionada);
     
-    // Inicializar campos vazios
-    const saboresAtuais = getSaboresAtuais();
-    setRecebidoHoje(saboresAtuais.map(() => ''));
+    // Inicializar campos vazios para ambos os tipos
+    const todosSabores = [...SABORES_EMPADA, ...SABORES_EMPADAO];
+    setLinhas(todosSabores.map((sabor) => ({ sabor, freezer: '', estufa: '', perdas: '' })));
+    setPedidoCaixas(todosSabores.map(() => 0));
+    setRecebidoHoje(todosSabores.map(() => ''));
   };
 
   useEffect(() => {
     carregarDadosDoDia(data);
   }, [data]);
 
-  // Atualizar sabores quando o tipo de produto mudar
+  // Inicializar campos quando não está em modo de edição
   useEffect(() => {
-    const saboresAtuais = getSaboresAtuais();
-    
-    // Se não está em modo de edição, inicializar com sabores vazios
-    if (!modoEdicao) {
-      setLinhas(saboresAtuais.map((sabor) => ({ sabor, freezer: '', estufa: '', perdas: '' })));
-      setPedidoCaixas(saboresAtuais.map(() => 0));
-      setRecebidoHoje(saboresAtuais.map(() => ''));
+    if (!modoEdicao && linhas.length === 0) {
+      const todosSabores = [...SABORES_EMPADA, ...SABORES_EMPADAO];
+      setLinhas(todosSabores.map((sabor) => ({ sabor, freezer: '', estufa: '', perdas: '' })));
+      setPedidoCaixas(todosSabores.map(() => 0));
+      setRecebidoHoje(todosSabores.map(() => ''));
     }
-  }, [tipoProduto]);
+  }, [modoEdicao, linhas.length]);
 
   const alterarLinha = (index: number, campo: keyof ContagemItem, valor: number | '') => {
     const coerced = valor === '' ? '' : Number(valor);
@@ -200,81 +402,32 @@ const ControleDiario: React.FC = () => {
     setRecebidoHoje((prev) => prev.map((v, i) => (i === index ? coerced : v)));
   };
 
-  const totais = useMemo(() => {
-    const totalFreezer = linhas.reduce((acc, it) => acc + numberOrZero(it.freezer), 0);
-    const totalEstufa = linhas.reduce((acc, it) => acc + numberOrZero(it.estufa), 0);
-    const totalPerdas = linhas.reduce((acc, it) => acc + numberOrZero(it.perdas), 0);
-
-    const totalEmpadas = totalFreezer + totalEstufa - totalPerdas;
-    const totalEmpadasCaixas = Math.floor(totalEmpadas / ITENS_POR_CAIXA);
-    const totalPedido = pedidoCaixas.reduce((acc, v) => acc + (v || 0), 0);
-    const totalPedidoUnidades = totalPedido * ITENS_POR_CAIXA;
-
-    const totalFreezerCaixas = Math.floor(totalFreezer / ITENS_POR_CAIXA);
-    const capacidadeOcupada = totalFreezerCaixas + totalPedido;
-    const capacidadeRestante = CAPACIDADE_FREEZER_CAIXAS - capacidadeOcupada;
-
-    const totalRecebido = recebidoHoje.reduce((acc, v) => acc + (typeof v === 'number' ? v : 0), 0);
-    const saboresAtuais = getSaboresAtuais();
-    const totalSaldoAnterior = saboresAtuais.reduce((acc, s) => acc + (saldoAnteriorPorSabor[s] || 0), 0);
-    // Vendas do dia = Saldo anterior - Total atual
-    // A diferença entre o que tinha e o que tem agora é o que foi vendido
-    const vendasDia = Math.max(0, totalSaldoAnterior - totalEmpadas);
-
-    // Calcular valor total do pedido
-    const valorTotalPedido = pedidoCaixas.reduce((acc, caixas, index) => {
-      if (caixas > 0) {
-        const sabor = saboresAtuais[index];
-        const preco = PRECOS_PEDIDO[sabor]?.[tipoProduto] || 0;
-        const unidades = caixas * ITENS_POR_CAIXA;
-        return acc + (unidades * preco);
-      }
-      return acc;
-    }, 0);
-
-    return {
-      totalFreezer,
-      totalEstufa,
-      totalPerdas,
-      totalEmpadas,
-      totalEmpadasCaixas,
-      totalPedido,
-      totalPedidoUnidades,
-      totalFreezerCaixas,
-      capacidadeOcupada,
-      capacidadeRestante,
-      excedeuCapacidade: capacidadeRestante < 0,
-      vendasDia,
-      totalRecebido,
-      totalSaldoAnterior,
-      valorTotalPedido,
-    };
-  }, [linhas, pedidoCaixas, recebidoHoje, saldoAnteriorPorSabor, tipoProduto]);
 
   const salvar = async () => {
     setCarregando(true);
     try {
-      const resumo = {
-        totalFreezer: totais.totalFreezer,
-        totalEstufa: totais.totalEstufa,
-        totalPerdas: totais.totalPerdas,
-        totalEmpadas: totais.totalEmpadas,
-        totalPedidoCaixas: totais.totalPedido,
-        capacidadeFreezerCaixas: CAPACIDADE_FREEZER_CAIXAS,
-        capacidadeOcupadaCaixas: totais.capacidadeOcupada,
-        capacidadeRestanteCaixas: totais.capacidadeRestante,
-        vendasDia: totais.vendasDia,
-        recebidoUnidades: totais.totalRecebido,
-        saldoAnteriorUnidades: totais.totalSaldoAnterior,
-        valorTotalPedido: totais.valorTotalPedido,
-        tipoProduto,
+      const totaisCombinados = calcularTotaisCombinados();
+    const resumo = {
+        totalFreezer: totaisCombinados.totalFreezer,
+        totalEstufa: totaisCombinados.totalEstufa,
+        totalPerdas: totaisCombinados.totalPerdas,
+        totalEmpadas: totaisCombinados.totalEmpadas,
+        totalPedidoCaixas: totaisCombinados.totalPedido,
+      capacidadeFreezerCaixas: CAPACIDADE_FREEZER_CAIXAS,
+        capacidadeOcupadaCaixas: Math.floor(totaisCombinados.totalEmpadas / ITENS_POR_CAIXA),
+        capacidadeRestanteCaixas: CAPACIDADE_FREEZER_CAIXAS - Math.floor(totaisCombinados.totalEmpadas / ITENS_POR_CAIXA),
+        vendasDia: totaisCombinados.vendasDia,
+        recebidoUnidades: totaisCombinados.totalRecebido,
+        saldoAnteriorUnidades: totaisCombinados.totalSaldoAnterior,
+        valorTotalPedido: totaisCombinados.valorTotalPedido,
       };
 
-      // Criar pedidos para o sistema de custos
-      const saboresAtuais = getSaboresAtuais();
+      // Criar pedidos para o sistema de custos (ambos os tipos)
+      const todosSabores = [...SABORES_EMPADA, ...SABORES_EMPADAO];
       const pedidos = pedidoCaixas.map((caixas, index) => {
         if (caixas > 0) {
-          const sabor = saboresAtuais[index];
+          const sabor = todosSabores[index];
+          const tipoProduto = index < SABORES_EMPADA.length ? 'empada' : 'empadao';
           const preco = PRECOS_PEDIDO[sabor]?.[tipoProduto] || 0;
           const unidades = caixas * ITENS_POR_CAIXA;
           return {
@@ -301,22 +454,24 @@ const ControleDiario: React.FC = () => {
           recebidoHoje,
           resumo,
           pedidos,
+          saldoAnteriorPorSabor,
           dataAtualizacao: new Date()
         });
-        alert(`Registro atualizado! ${pedidos.length > 0 ? `Pedido de R$ ${totais.valorTotalPedido.toFixed(2)} enviado para controle de custos.` : ''}`);
+        alert(`Registro atualizado! ${pedidos.length > 0 ? `Pedido de R$ ${totaisCombinados.valorTotalPedido.toFixed(2)} enviado para controle de custos.` : ''}`);
       } else {
         // Criar novo documento
-        const empadasCollection = collection(db, 'contagem_diaria');
-        await addDoc(empadasCollection, {
-          data,
-          itens: linhas,
-          pedidoCaixas,
-          recebidoHoje,
-          resumo,
+    const empadasCollection = collection(db, 'contagem_diaria');
+    await addDoc(empadasCollection, {
+      data,
+      itens: linhas,
+      pedidoCaixas,
+      recebidoHoje,
+      resumo,
           pedidos,
+          saldoAnteriorPorSabor,
           dataCriacao: new Date()
         });
-        alert(`Contagem salva! ${pedidos.length > 0 ? `Pedido de R$ ${totais.valorTotalPedido.toFixed(2)} enviado para controle de custos.` : ''}`);
+        alert(`Contagem salva! ${pedidos.length > 0 ? `Pedido de R$ ${totaisCombinados.valorTotalPedido.toFixed(2)} enviado para controle de custos.` : ''}`);
       }
 
       // Salvar pedidos no sistema de custos (apenas se não estiver editando)
@@ -338,10 +493,10 @@ const ControleDiario: React.FC = () => {
   };
 
   const limparDados = () => {
-    const saboresAtuais = getSaboresAtuais();
-    setLinhas(saboresAtuais.map((sabor) => ({ sabor, freezer: '', estufa: '', perdas: '' })));
-    setPedidoCaixas(saboresAtuais.map(() => 0));
-    setRecebidoHoje(saboresAtuais.map(() => ''));
+    const todosSabores = [...SABORES_EMPADA, ...SABORES_EMPADAO];
+    setLinhas(todosSabores.map((sabor) => ({ sabor, freezer: '', estufa: '', perdas: '' })));
+    setPedidoCaixas(todosSabores.map(() => 0));
+    setRecebidoHoje(todosSabores.map(() => ''));
     setModoEdicao(false);
     setDocumentoId(null);
   };
@@ -362,17 +517,6 @@ const ControleDiario: React.FC = () => {
             disabled={carregando}
           />
         </label>
-        <label>
-          Tipo de Produto:
-          <select 
-            value={tipoProduto} 
-            onChange={(e) => setTipoProduto(e.target.value as 'empada' | 'empadao')}
-            disabled={carregando}
-          >
-            <option value="empada">Empada</option>
-            <option value="empadao">Empadão</option>
-          </select>
-        </label>
         <button onClick={() => setMostrarPedido((v) => !v)} disabled={carregando}>
           {mostrarPedido ? 'Ocultar Pedido' : 'Mostrar Pedido'}
         </button>
@@ -390,17 +534,64 @@ const ControleDiario: React.FC = () => {
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, margin: '12px 0' }}>
-        <ResumoCard titulo="Saldo anterior" valor={`${totais.totalSaldoAnterior}`} />
-        <ResumoCard titulo="Recebido (unid)" valor={`${totais.totalRecebido}`} />
-        <ResumoCard titulo="Vendas do dia" destaque valor={`${totais.vendasDia}`} />
-        <ResumoCard titulo="Freezer" valor={`${totais.totalFreezer}`} />
-        <ResumoCard titulo="Estufa" valor={`${totais.totalEstufa}`} />
-        <ResumoCard titulo="Perdas" valor={`${totais.totalPerdas}`} />
-        <ResumoCard titulo="Total Empadas" valor={`${totais.totalEmpadas}`} />
-        <ResumoCard titulo="Pedido (caixas)" valor={`${totais.totalPedido}`} />
-        <ResumoCard titulo="Valor do Pedido" valor={`R$ ${totais.valorTotalPedido.toFixed(2)}`} destaque />
+        {(() => {
+          const totaisCombinados = calcularTotaisCombinados();
+          return (
+            <>
+              <ResumoCard titulo="Saldo anterior" valor={`${totaisCombinados.totalSaldoAnterior}`} />
+              <ResumoCard titulo="Recebido (unid)" valor={`${totaisCombinados.totalRecebido}`} />
+              <ResumoCard titulo="Vendas do dia" destaque valor={`${totaisCombinados.vendasDia}`} />
+              <ResumoCard titulo="Freezer" valor={`${totaisCombinados.totalFreezer}`} />
+              <ResumoCard titulo="Estufa" valor={`${totaisCombinados.totalEstufa}`} />
+              <ResumoCard titulo="Perdas" valor={`${totaisCombinados.totalPerdas}`} />
+              <ResumoCard titulo="Total Empadas" valor={`${totaisCombinados.totalEmpadas}`} />
+              <ResumoCard titulo="Pedido (caixas)" valor={`${totaisCombinados.totalPedido}`} />
+              <ResumoCard titulo="Valor do Pedido" valor={`R$ ${totaisCombinados.valorTotalPedido.toFixed(2)}`} destaque />
+              <ResumoCard titulo="Caixas Totais" valor={`${totaisCombinados.totalEmpadasCaixas}`} />
+              <ResumoCard titulo="Valor Estimado Vendas" valor={`R$ ${(totaisCombinados.vendasDia * 7.00).toFixed(2)}`} destaque />
+            </>
+          );
+        })()}
       </div>
 
+      {/* Seção Empadas */}
+      <div style={{ marginBottom: '30px' }}>
+        <h2 style={{ color: '#3498db', marginBottom: '10px' }}>🥧 EMPADAS</h2>
+        <TabelaControle 
+          tipoProduto="empada"
+          sabores={SABORES_EMPADA}
+          linhas={linhas.filter((_, index) => index < SABORES_EMPADA.length)}
+          pedidoCaixas={pedidoCaixas.slice(0, SABORES_EMPADA.length)}
+          recebidoHoje={recebidoHoje.slice(0, SABORES_EMPADA.length)}
+          saldoAnteriorPorSabor={saldoAnteriorPorSabor}
+          mostrarPedido={mostrarPedido}
+          alterarLinha={alterarLinha}
+          alterarPedido={alterarPedido}
+          alterarRecebido={alterarRecebido}
+          totais={calcularTotaisPorTipo('empada')}
+        />
+      </div>
+
+      {/* Seção Empadões */}
+      <div style={{ marginBottom: '30px' }}>
+        <h2 style={{ color: '#e74c3c', marginBottom: '10px' }}>🥟 EMPADÕES</h2>
+        <TabelaControle 
+          tipoProduto="empadao"
+          sabores={SABORES_EMPADAO}
+          linhas={linhas.slice(SABORES_EMPADA.length)}
+          pedidoCaixas={pedidoCaixas.slice(SABORES_EMPADA.length)}
+          recebidoHoje={recebidoHoje.slice(SABORES_EMPADA.length)}
+          saldoAnteriorPorSabor={saldoAnteriorPorSabor}
+          mostrarPedido={mostrarPedido}
+          alterarLinha={(index, campo, valor) => alterarLinha(index + SABORES_EMPADA.length, campo, valor)}
+          alterarPedido={(index, valor) => alterarPedido(index + SABORES_EMPADA.length, valor)}
+          alterarRecebido={(index, valor) => alterarRecebido(index + SABORES_EMPADA.length, valor)}
+          totais={calcularTotaisPorTipo('empadao')}
+        />
+      </div>
+
+      {/* Tabela original comentada - substituída pelas seções acima */}
+      {/* 
       <table className="tabela-controle">
         <thead>
           <tr>
@@ -505,16 +696,21 @@ const ControleDiario: React.FC = () => {
             {mostrarPedido && <td>R$ {totais.valorTotalPedido.toFixed(2)}</td>}
             {mostrarPedido && <td>{totais.totalPedidoUnidades}</td>}
           </tr>
+          <tr style={{ backgroundColor: '#f0f0f0', fontWeight: 'bold' }}>
+            <td><strong>Resumo</strong></td>
+            <td colSpan={5}></td>
+            <td><strong>Caixas: {totais.totalEmpadasCaixas}</strong></td>
+            <td><strong>Valor Vendas: R$ {(totais.vendasDia * 7.00).toFixed(2)}</strong></td>
+            {mostrarPedido && <td colSpan={4}></td>}
+          </tr>
         </tfoot>
       </table>
+      */}
 
       <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-        <button className="salvar-btn" onClick={salvar} disabled={totais.excedeuCapacidade}>
+        <button className="salvar-btn" onClick={salvar}>
           Salvar Contagem
         </button>
-        {totais.excedeuCapacidade && (
-          <span style={{ color: '#f66' }}>Reduza o pedido: excedeu a capacidade do freezer.</span>
-        )}
       </div>
     </div>
   );

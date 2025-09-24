@@ -56,32 +56,32 @@ const Custos: React.FC = () => {
                 if (vendasSabor > 0) {
                   // Preços de venda (diferentes dos preços de custo)
                   const precosVenda: { [key: string]: { empada: number; empadao: number } } = {
-                    '4 Queijos': { empada: 2.59, empadao: 0 },
-                    'Bacalhau': { empada: 2.99, empadao: 0 },
-                    'Banana': { empada: 2.29, empadao: 0 },
-                    'Calabresa': { empada: 2.49, empadao: 0 },
+                    '4 Queijos': { empada: 2.75, empadao: 0 },
+                    'Bacalhau': { empada: 2.75, empadao: 0 },
+                    'Banana': { empada: 2.40, empadao: 0 },
+                    'Calabresa': { empada: 2.58, empadao: 0 },
                     'Camarão': { empada: 3.14, empadao: 7.07 },
                     'Camarão com Requeijão': { empada: 3.24, empadao: 0 },
                     'Carne Seca': { empada: 3.54, empadao: 6.97 },
                     'Carne Seca com Requeijão': { empada: 3.44, empadao: 0 },
                     'Chocolate': { empada: 2.85, empadao: 0 },
-                    'Frango': { empada: 2.29, empadao: 4.02 },
-                    'Frango com Ameixa e Bacon': { empada: 3.24, empadao: 0 },
-                    'Frango com Azeitona': { empada: 2.99, empadao: 5.27 },
+                    'Frango': { empada: 2.59, empadao: 5.00 },
+                    'Frango com Ameixa e Bacon': { empada: 3.07, empadao: 0 },
+                    'Frango com Azeitona': { empada: 2.95, empadao: 5.63 },
                     'Frango com Bacon': { empada: 2.99, empadao: 0 },
-                    'Frango com Cheddar': { empada: 2.59, empadao: 0 },
+                    'Frango com Cheddar': { empada: 2.75, empadao: 0 },
                     'Frango com Palmito': { empada: 2.99, empadao: 0 },
-                    'Frango com Requeijão': { empada: 2.49, empadao: 4.32 },
+                    'Frango com Requeijão': { empada: 2.69, empadao: 5.10 },
                     'Palmito': { empada: 3.09, empadao: 0 },
                     'Pizza': { empada: 2.39, empadao: 0 },
-                    'Queijo': { empada: 2.69, empadao: 0 },
-                    'Queijo com Alho': { empada: 2.85, empadao: 0 },
-                    'Queijo com Cebola': { empada: 2.49, empadao: 0 },
-                    'Romeu e Julieta': { empada: 2.99, empadao: 0 }
+                    'Queijo': { empada: 4.02, empadao: 0 },
+                    'Queijo com Alho': { empada: 3.77, empadao: 0 },
+                    'Queijo com Cebola': { empada: 2.69, empadao: 0 },
+                    'Romeu e Julieta': { empada: 3.31, empadao: 0 }
                   };
                   
                   const tipoProduto = data.resumo.tipoProduto || 'empada';
-                  const precoUnidade = precosVenda[item.sabor]?.[tipoProduto] || 2.59;
+                  const precoUnidade = precosVenda[item.sabor]?.[tipoProduto as 'empada' | 'empadao'] || 2.59;
                   
                   vendasReais.push({
                     id: `${doc.id}-${item.sabor}`,
