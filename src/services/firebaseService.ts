@@ -80,9 +80,15 @@ export const buscarSaldoInicialPorSabor = async (
 	snap.forEach((docSnap) => {
 		const dados = docSnap.data() as FirestoreContagemDoc;
 		if (!dados?.itens) return;
-		dados.itens.forEach((i) => {
-			const valor = Number(i.saldoInformado ?? 0) || 0;
-			if (!(i.sabor in saldos)) saldos[i.sabor] = valor;
+		dados.itens.forEach((i, index) => {
+			// Calcular saldo baseado no saldo previsto (total + pedidos)
+			const freezer = Number(i.freezer) || 0;
+			const estufa = Number(i.estufa) || 0;
+			const perdas = Number(i.perdas) || 0;
+			const total = freezer + estufa - perdas;
+			const pedidoCaixas = dados.pedidoCaixas?.[index] || 0;
+			const saldoPrevisto = total + (pedidoCaixas * 18); // 18 itens por caixa
+			saldos[i.sabor] = saldoPrevisto;
 		});
 	});
 	return saldos;
@@ -105,8 +111,15 @@ export const buscarSaldoFinalPorSabor = async (
 	snap.forEach((docSnap) => {
 		const dados = docSnap.data() as FirestoreContagemDoc;
 		if (!dados?.itens) return;
-		dados.itens.forEach((i) => {
-			saldos[i.sabor] = Number(i.saldoInformado ?? 0) || 0;
+		dados.itens.forEach((i, index) => {
+			// Calcular saldo baseado no saldo previsto (total + pedidos)
+			const freezer = Number(i.freezer) || 0;
+			const estufa = Number(i.estufa) || 0;
+			const perdas = Number(i.perdas) || 0;
+			const total = freezer + estufa - perdas;
+			const pedidoCaixas = dados.pedidoCaixas?.[index] || 0;
+			const saldoPrevisto = total + (pedidoCaixas * 18); // 18 itens por caixa
+			saldos[i.sabor] = saldoPrevisto;
 		});
 	});
 	return saldos;

@@ -329,21 +329,23 @@ const ControleDiario: React.FC = () => {
       
       if (!contagemSnapshot.empty) {
         const docData = contagemSnapshot.docs[0].data();
-        const saboresAtuais = getSaboresAtuais();
+        const saboresAtuais = [...SABORES_EMPADA, ...SABORES_EMPADAO];
         
         console.log('Dados encontrados do dia anterior:', docData);
         
-        // Carregar saldo anterior baseado no total do dia anterior
+        // Carregar saldo anterior baseado no saldo previsto do dia anterior (total + pedidos)
         const saldoAnterior: { [key: string]: number } = {};
-        if (docData.itens) {
-          docData.itens.forEach((item: any) => {
+        if (docData.itens && docData.pedidoCaixas) {
+          docData.itens.forEach((item: any, index: number) => {
             if (saboresAtuais.includes(item.sabor)) {
               const freezer = numberOrZero(item.freezer);
               const estufa = numberOrZero(item.estufa);
               const perdas = numberOrZero(item.perdas);
               const total = freezer + estufa - perdas;
-              saldoAnterior[item.sabor] = total;
-              console.log(`Sabor ${item.sabor}: freezer=${freezer}, estufa=${estufa}, perdas=${perdas}, total=${total}`);
+              const pedidoCaixas = docData.pedidoCaixas[index] || 0;
+              const saldoPrevisto = total + (pedidoCaixas * ITENS_POR_CAIXA);
+              saldoAnterior[item.sabor] = saldoPrevisto;
+              console.log(`Sabor ${item.sabor}: freezer=${freezer}, estufa=${estufa}, perdas=${perdas}, total=${total}, pedido=${pedidoCaixas} caixas, saldoPrevisto=${saldoPrevisto}`);
             }
           });
         }
