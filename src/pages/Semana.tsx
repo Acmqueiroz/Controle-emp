@@ -109,7 +109,7 @@ const Semana: React.FC = () => {
 								};
 								
 								const tipoProduto = data.resumo.tipoProduto || 'empada';
-								const precoUnidade = precosVenda[item.sabor]?.[tipoProduto] || 2.59;
+								const precoUnidade = precosVenda[item.sabor]?.[tipoProduto as keyof typeof precosVenda[string]] || 2.59;
 								
 								vendasReais.push({
 									id: `${doc.id}-${item.sabor}`,

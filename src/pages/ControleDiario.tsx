@@ -206,7 +206,7 @@ const ControleDiario: React.FC = () => {
     const totalEmpadas = totalFreezer + totalEstufa - totalPerdas;
     const totalEmpadasCaixas = Math.floor(totalEmpadas / ITENS_POR_CAIXA);
     
-    const totalRecebido = recebidoHojeTipo.reduce((acc, v) => acc + (typeof v === 'number' ? v : 0), 0);
+    const totalRecebido = recebidoHojeTipo.reduce((acc, v) => acc + (typeof v === 'number' ? v : Number(v) || 0), 0);
     const totalSaldoAnterior = sabores.reduce((acc, s) => acc + (saldoAnteriorPorSabor[s] || 0), 0);
     const vendasDia = Math.max(0, totalSaldoAnterior - totalEmpadas);
     
@@ -507,7 +507,10 @@ const ControleDiario: React.FC = () => {
     <div className="container">
       <h1>Controle Diário {modoEdicao && <span style={{ color: '#f39c12', fontSize: '0.8em' }}>(Editando)</span>}</h1>
       {/* Debug: mostrar estado do modoEdicao */}
-      {console.log('Estado atual - modoEdicao:', modoEdicao, 'documentoId:', documentoId)}
+      {(() => {
+        console.log('Estado atual - modoEdicao:', modoEdicao, 'documentoId:', documentoId);
+        return null;
+      })()}
 
       <div className="controls" style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <label>
