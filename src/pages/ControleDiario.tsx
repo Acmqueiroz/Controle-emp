@@ -77,7 +77,7 @@ const TabelaControle: React.FC<{
     totalPedido: number;
     totalPedidoUnidades: number;
   };
-}> = ({ tipoProduto, sabores, linhas, pedidoCaixas, recebidoHoje, saldoAnteriorPorSabor, mostrarPedido, alterarLinha, alterarPedido, alterarRecebido, totais }) => {
+}> = ({ tipoProduto, linhas, pedidoCaixas, recebidoHoje, saldoAnteriorPorSabor, mostrarPedido, alterarLinha, alterarPedido, alterarRecebido, totais }) => {
   return (
     <table className="tabela-controle">
       <thead>
@@ -103,7 +103,7 @@ const TabelaControle: React.FC<{
           const perdas = numberOrZero(it.perdas);
           const total = freezer + estufa - perdas;
           const saldoAnt = saldoAnteriorPorSabor[it.sabor] || 0;
-          const recebido = typeof recebidoHoje[index] === 'number' ? (recebidoHoje[index] as number) : 0;
+          //const recebido = typeof recebidoHoje[index] === 'number' ? (recebidoHoje[index] as number) : 0;
           const vendas = Math.max(0, saldoAnt - total);
           const saldoPrevisto = total + (pedidoCaixas[index] || 0) * ITENS_POR_CAIXA;
           const precoUnitario = PRECOS_PEDIDO[it.sabor]?.[tipoProduto] || 0;
