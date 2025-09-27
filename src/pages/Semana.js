@@ -177,7 +177,7 @@ const Semana = () => {
             setSaldoInicial(salIni);
             setSaldoFinal(salFim);
         }
-        catch (error) {
+        catch {
             console.log('Usando dados de exemplo');
         }
         await calcularRelatorioSemanal();
